@@ -544,7 +544,8 @@ table.plain td.num{font-family:"IBM Plex Mono",monospace; color:var(--ink);}
           <h1>Performance report</h1>
         </div>
         <div class="topbar__actions">
-          <button class="btn" id="printReportBtn">Download / print report</button>
+          <button class="btn btn--primary" id="downloadReportBtn">⬇ Download personalized report</button>
+          <button class="btn" id="printReportBtn">Print / Save as PDF</button>
         </div>
       </div>
       <div id="reportsBody"></div>
@@ -1804,31 +1805,169 @@ function renderSparkline(){
 }
 
 /* ---------- Print report ---------- */
-function buildAndPrintReport(){
-  const p=state.profile;
-  const totalQuizzes=state.quizHistory.length;
+function personalizedReportData(){
+  const p = state.profile;
+  const totalQuizzes = state.quizHistory.length;
   const overallAcc = totalQuizzes ? Math.round(state.quizHistory.reduce((s,q)=>s+q.accuracy,0)/totalQuizzes) : 0;
-  const topicRows = TOPICS.map(t=>{ const pr=state.progress[t.id]; return {name:t.name, acc:(pr&&pr.attempts)?Math.round(pr.correct/pr.attempts*100):null, attempts:pr?pr.attempts:0}; }).filter(r=>r.attempts>0);
+  const avgPercentile = totalQuizzes ? Math.round(state.quizHistory.reduce((s,q)=>s+q.percentile,0)/totalQuizzes) : 0;
+  const topicRows = TOPICS.map(t=>{ const pr=state.progress[t.id]; return {name:t.name, category:t.category, acc:(pr&&pr.attempts)?Math.round(pr.correct/pr.attempts*100):null, attempts:pr?pr.attempts:0}; }).filter(r=>r.attempts>0);
+  const rm = state.roadmap || generateRoadmap(p);
+  const weakRows = Object.keys(state.progress).map(id=>{
+    const pr=state.progress[id]; const t=TOPICS.find(x=>x.id===id);
+    return {name:t?t.name:id, attempts:pr.attempts, acc: pr.attempts? Math.round(pr.correct/pr.attempts*100):0};
+  }).filter(r=>r.attempts>=2 && r.acc<65).sort((a,b)=>a.acc-b.acc);
+  return {p, totalQuizzes, overallAcc, avgPercentile, topicRows, rm, weakRows};
+}
+function personalizedReportBodyHtml(){
+  const d = personalizedReportData();
+  const p = d.p;
+  const roadmapRows = d.rm.weeks.map((w,i)=>`<tr><td>${w.topics&&w.topics.length?"Week "+(i+1):"Milestone"}</td><td>${escapeHtml(w.title||"")}</td><td>${escapeHtml(w.milestone||"")}</td></tr>`).join("");
+  const topicRowsHtml = d.topicRows.length ? d.topicRows.map(r=>`<tr><td>${escapeHtml(r.name)}</td><td style="text-align:center;">${r.attempts}</td><td style="text-align:center;">${r.acc}%</td></tr>`).join("")
+    : `<tr><td colspan="3" style="text-align:center; color:#555;">No practice attempts logged yet.</td></tr>`;
+  const weakHtml = d.weakRows.length ? d.weakRows.map(r=>`<li><strong>${escapeHtml(r.name)}</strong> — ${r.acc}% accuracy across ${r.attempts} attempts. Focus a revision session here before your next mock test.</li>`).join("")
+    : `<li>No weak areas flagged yet — recommendations need at least 2 attempts on a topic. Keep practicing to unlock this.</li>`;
+  const badgeHtmlList = BADGES.filter(b=>state.badges.includes(b.id)).map(b=>`<li><strong>${escapeHtml(b.name)}</strong> — ${escapeHtml(b.desc)}</li>`).join("") || `<li>No badges earned yet.</li>`;
+  return `
+    <h1 style="font-family:Georgia,'Times New Roman',serif; font-size:24pt; margin:0 0 4pt;">AptiGenie — Personalized Preparation Report</h1>
+    <p style="margin:0 0 14pt; font-size:11pt;"><strong>${escapeHtml(p.name)}</strong> &middot; Target: ${escapeHtml(p.target)} &middot; Level: ${p.level} &middot; Prep time: ${p.prepTime} &middot; Generated ${new Date().toLocaleDateString()}</p>
+
+    <h2 style="font-size:14pt; border-bottom:1.5pt solid #000; padding-bottom:4pt;">Profile</h2>
+    <table style="border-collapse:collapse; width:100%; margin:8pt 0 16pt; font-size:10.5pt;">
+      <tr><td style="border:1px solid #000; padding:6pt 9pt; font-weight:700; width:30%; background:#EDEDED;">Educational background</td><td style="border:1px solid #000; padding:6pt 9pt;">${escapeHtml(p.edu)}</td></tr>
+      <tr><td style="border:1px solid #000; padding:6pt 9pt; font-weight:700; background:#EDEDED;">Focus topics</td><td style="border:1px solid #000; padding:6pt 9pt;">${(p.topics&&p.topics.length)?p.topics.map(id=>escapeHtml(TOPICS.find(t=>t.id===id)?.name||id)).join(", "):"Full syllabus"}</td></tr>
+      <tr><td style="border:1px solid #000; padding:6pt 9pt; font-weight:700; background:#EDEDED;">Learning goals</td><td style="border:1px solid #000; padding:6pt 9pt;">${p.goals?escapeHtml(p.goals):"Not specified"}</td></tr>
+    </table>
+
+    <h2 style="font-size:14pt; border-bottom:1.5pt solid #000; padding-bottom:4pt;">Performance summary</h2>
+    <table style="border-collapse:collapse; width:100%; margin:8pt 0 16pt; font-size:10.5pt;">
+      <tr><td style="border:1px solid #000; padding:6pt 9pt; font-weight:700; width:50%; background:#EDEDED;">Quizzes taken</td><td style="border:1px solid #000; padding:6pt 9pt; text-align:center;">${d.totalQuizzes}</td></tr>
+      <tr><td style="border:1px solid #000; padding:6pt 9pt; font-weight:700; background:#EDEDED;">Overall accuracy</td><td style="border:1px solid #000; padding:6pt 9pt; text-align:center;">${d.overallAcc}%</td></tr>
+      <tr><td style="border:1px solid #000; padding:6pt 9pt; font-weight:700; background:#EDEDED;">Average estimated percentile</td><td style="border:1px solid #000; padding:6pt 9pt; text-align:center;">${d.totalQuizzes?"P"+d.avgPercentile:"—"}</td></tr>
+      <tr><td style="border:1px solid #000; padding:6pt 9pt; font-weight:700; background:#EDEDED;">Badges earned</td><td style="border:1px solid #000; padding:6pt 9pt; text-align:center;">${state.badges.length} / ${BADGES.length}</td></tr>
+    </table>
+
+    <h2 style="font-size:14pt; border-bottom:1.5pt solid #000; padding-bottom:4pt;">Topic-wise performance</h2>
+    <table style="border-collapse:collapse; width:100%; margin:8pt 0 16pt; font-size:10.5pt;">
+      <tr><th style="border:1px solid #000; padding:6pt 9pt; background:#DEDEDE; text-align:left;">Topic</th><th style="border:1px solid #000; padding:6pt 9pt; background:#DEDEDE;">Attempts</th><th style="border:1px solid #000; padding:6pt 9pt; background:#DEDEDE;">Accuracy</th></tr>
+      ${topicRowsHtml}
+    </table>
+
+    <h2 style="font-size:14pt; border-bottom:1.5pt solid #000; padding-bottom:4pt;">Your roadmap</h2>
+    <table style="border-collapse:collapse; width:100%; margin:8pt 0 16pt; font-size:10.5pt;">
+      <tr><th style="border:1px solid #000; padding:6pt 9pt; background:#DEDEDE; text-align:left; width:14%;">Week</th><th style="border:1px solid #000; padding:6pt 9pt; background:#DEDEDE; text-align:left; width:26%;">Focus</th><th style="border:1px solid #000; padding:6pt 9pt; background:#DEDEDE; text-align:left;">Milestone</th></tr>
+      ${roadmapRows}
+    </table>
+
+    <h2 style="font-size:14pt; border-bottom:1.5pt solid #000; padding-bottom:4pt;">Recommended next steps</h2>
+    <ul style="font-size:10.5pt; margin:8pt 0 16pt;">${weakHtml}</ul>
+
+    <h2 style="font-size:14pt; border-bottom:1.5pt solid #000; padding-bottom:4pt;">Badges earned</h2>
+    <ul style="font-size:10.5pt; margin:8pt 0 4pt;">${badgeHtmlList}</ul>
+  `;
+}
+function buildAndPrintReport(){
   const root=document.getElementById("printReportRoot");
-  root.innerHTML = `
-   <div style="max-width:720px;margin:30px auto;font-family:'Public Sans',sans-serif;color:#111;">
-     <h1 style="font-family:'Fraunces',serif;">AptiGenie — Preparation Report</h1>
-     <p><strong>${escapeHtml(p.name)}</strong> · ${escapeHtml(p.target)} · ${p.level} level · Generated ${new Date().toLocaleDateString()}</p>
-     <h2>Summary</h2>
-     <table class="plain"><tr><td>Quizzes taken</td><td class="num">${totalQuizzes}</td></tr><tr><td>Overall accuracy</td><td class="num">${overallAcc}%</td></tr><tr><td>Badges earned</td><td class="num">${state.badges.length}/${BADGES.length}</td></tr></table>
-     <h2>Topic-wise performance</h2>
-     <table class="plain"><tr><th>Topic</th><th>Attempts</th><th>Accuracy</th></tr>
-       ${topicRows.map(r=>`<tr><td>${escapeHtml(r.name)}</td><td class="num">${r.attempts}</td><td class="num">${r.acc}%</td></tr>`).join("")}
-     </table>
-     <h2>Recommended next steps</h2>
-     ${renderWeakAreas()}
-   </div>`;
+  root.innerHTML = `<div style="max-width:760px;margin:30px auto;font-family:Georgia,'Times New Roman',serif;color:#000;background:#fff;">${personalizedReportBodyHtml()}</div>`;
   const shellEl=document.querySelector(".shell");
+  const fab=document.getElementById("coachFab"), panel=document.getElementById("coachPanel");
   root.classList.remove("hidden");
-  shellEl.classList.add("hidden");
+  shellEl.classList.add("hidden"); fab.classList.add("hidden"); panel.classList.add("hidden");
   window.print();
   root.classList.add("hidden");
-  shellEl.classList.remove("hidden");
+  shellEl.classList.remove("hidden"); fab.classList.remove("hidden");
+}
+function mdCell(s){ return String(s??"").replace(/\|/g,"/").replace(/\r?\n/g," ").trim(); }
+function personalizedReportMarkdown(){
+  const d = personalizedReportData();
+  const p = d.p;
+  const lines = [];
+  lines.push(`# AptiGenie — Personalized Preparation Report`);
+  lines.push(``);
+  lines.push(`**${mdCell(p.name)}** | Target: ${mdCell(p.target)} | Level: ${p.level} | Prep time: ${p.prepTime} | Generated ${new Date().toLocaleDateString()}`);
+  lines.push(``);
+  lines.push(`## Profile`);
+  lines.push(``, `| Field | Value |`, `|---|---|`);
+  lines.push(`| Educational background | ${mdCell(p.edu)} |`);
+  lines.push(`| Focus topics | ${(p.topics&&p.topics.length)?mdCell(p.topics.map(id=>TOPICS.find(t=>t.id===id)?.name||id).join(", ")):"Full syllabus"} |`);
+  lines.push(`| Learning goals | ${p.goals?mdCell(p.goals):"Not specified"} |`);
+  lines.push(``);
+  lines.push(`## Performance summary`);
+  lines.push(``, `| Metric | Value |`, `|---|---|`);
+  lines.push(`| Quizzes taken | ${d.totalQuizzes} |`);
+  lines.push(`| Overall accuracy | ${d.overallAcc}% |`);
+  lines.push(`| Average estimated percentile | ${d.totalQuizzes?"P"+d.avgPercentile:"—"} |`);
+  lines.push(`| Badges earned | ${state.badges.length} / ${BADGES.length} |`);
+  lines.push(``);
+  lines.push(`## Topic-wise performance`);
+  lines.push(``, `| Topic | Attempts | Accuracy |`, `|---|---|---|`);
+  if(d.topicRows.length) d.topicRows.forEach(r=>lines.push(`| ${mdCell(r.name)} | ${r.attempts} | ${r.acc}% |`));
+  else lines.push(`| _No practice attempts logged yet._ | — | — |`);
+  lines.push(``);
+  lines.push(`## Your roadmap`);
+  lines.push(``, `| Week | Focus | Milestone |`, `|---|---|---|`);
+  d.rm.weeks.forEach((w,i)=>lines.push(`| ${w.topics&&w.topics.length?"Week "+(i+1):"Milestone"} | ${mdCell(w.title||"")} | ${mdCell(w.milestone||"")} |`));
+  lines.push(``);
+  lines.push(`## Recommended next steps`);
+  lines.push(``);
+  if(d.weakRows.length) d.weakRows.forEach(r=>lines.push(`- **${mdCell(r.name)}** — ${r.acc}% accuracy across ${r.attempts} attempts. Focus a revision session here before your next mock test.`));
+  else lines.push(`- No weak areas flagged yet — recommendations need at least 2 attempts on a topic. Keep practicing to unlock this.`);
+  lines.push(``);
+  lines.push(`## Badges earned`);
+  lines.push(``);
+  const earned = BADGES.filter(b=>state.badges.includes(b.id));
+  if(earned.length) earned.forEach(b=>lines.push(`- **${b.name}** — ${b.desc}`));
+  else lines.push(`- No badges earned yet.`);
+  lines.push(``, `_Generated by AptiGenie · ${new Date().toLocaleString()}_`);
+  return lines.join("\n");
+}
+function downloadReportFileBlob(){
+  const p = state.profile;
+  const doc = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AptiGenie Preparation Report — ${escapeHtml(p.name)}</title>
+<style>
+  body{font-family:Georgia,'Times New Roman',serif; color:#000; background:#fff; max-width:800px; margin:30px auto; padding:0 20px; line-height:1.5;}
+  h1,h2{color:#000;}
+  table{border-collapse:collapse;}
+  @page{ size:A4; margin:20mm 16mm; }
+</style>
+</head>
+<body>
+${personalizedReportBodyHtml()}
+<p style="margin-top:24px; font-size:9pt; color:#555; border-top:1px solid #000; padding-top:8px;">Generated by AptiGenie &middot; ${new Date().toLocaleString()}</p>
+</body>
+</html>`;
+  const blob = new Blob([doc], {type:"text/html"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `AptiGenie-Report-${(p.name||"learner").replace(/[^a-z0-9]+/gi,"-")}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+async function downloadReportFile(){
+  const btn = document.getElementById("downloadReportBtn");
+  const orig = btn.textContent;
+  let handled = false;
+  try{
+    const downloads = await claude.use("downloads");
+    if(downloads){
+      const p = state.profile;
+      const md = personalizedReportMarkdown();
+      const res = await downloads.save({filename:`AptiGenie-Report-${(p.name||"learner").replace(/[^a-z0-9]+/gi,"-")}.md`, data: md});
+      if(res && res.status==="saved"){
+        handled = true;
+        btn.textContent = "Saved ✓"; setTimeout(()=>{btn.textContent=orig;},1500);
+      }
+    }
+  }catch(err){
+    if(err && err.code==="declined") handled = true;
+  }
+  if(!handled) downloadReportFileBlob();
 }
 
 /* ---------- Prompt Studio ---------- */
@@ -1937,6 +2076,7 @@ document.getElementById("coachClearChat").addEventListener("click",()=>{
   state.aiChat = []; saveState(); renderCoach();
 });
 document.getElementById("printReportBtn").addEventListener("click", buildAndPrintReport);
+document.getElementById("downloadReportBtn").addEventListener("click", downloadReportFile);
 document.querySelectorAll("#quizModeToggle .mode-btn").forEach(b=>b.addEventListener("click",()=>{
   quizMode=b.dataset.mode;
   document.querySelectorAll("#quizModeToggle .mode-btn").forEach(x=>x.classList.toggle("active", x===b));
