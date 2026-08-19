@@ -607,13 +607,13 @@ table.plain td.num{font-family:"IBM Plex Mono",monospace; color:var(--ink);}
     <div class="field" id="coachGeminiFields">
       <label for="coachGeminiKey">Google AI (Gemini) API key <span class="help">(optional)</span></label>
       <input type="password" id="coachGeminiKey" placeholder="AIza...">
-      <input type="text" id="coachGeminiModel" list="coachGeminiModelList" placeholder="gemini-2.5-flash" value="gemini-2.5-flash">
+      <input type="text" id="coachGeminiModel" list="coachGeminiModelList" placeholder="gemini-3.6-flash" value="gemini-3.6-flash">
       <datalist id="coachGeminiModelList">
-        <option value="gemini-2.5-flash">
-        <option value="gemini-2.5-pro">
+        <option value="gemini-3.6-flash">
         <option value="gemini-3.7-flash">
+        <option value="gemini-2.5-pro">
       </datalist>
-      <span class="help">Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>. ⚠ Google's API has no documented direct-browser-access support (unlike Anthropic's) — if a message fails to send, it's usually a CORS block, not a bug here; retry once, and if it persists, that's Google's API design.</span>
+      <span class="help">Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>. Google occasionally retires a model name — if you see "no longer available," try one of the other model names above. A "high demand" error is a temporary free-tier rate limit; just retry.</span>
     </div>
     <div style="display:flex; gap:8px; margin-top:8px;">
       <button class="btn btn--sm" id="coachSaveSettings" style="flex:1; justify-content:center;">Save</button>
@@ -1051,7 +1051,7 @@ const ACTIVE_KEY = "aptigenie_active_learner_v1";
 
 function defaultState(){
   return {profile:null, progress:{}, quizHistory:[], badges:[], learnerId:null,
-    aiProvider:"gemini", aiKey:"", aiModel:"claude-opus-5", geminiKey:"", geminiModel:"gemini-2.5-flash", aiChat:[]};
+    aiProvider:"gemini", aiKey:"", aiModel:"claude-opus-5", geminiKey:"", geminiModel:"gemini-3.6-flash", aiChat:[]};
 }
 function loadLearners(){
   try{ return JSON.parse(localStorage.getItem(LEARNERS_KEY)) || {}; }catch(e){ return {}; }
@@ -1070,7 +1070,7 @@ function migrateLegacyState(){
     if(!old || !old.profile) return;
     const id = "learner_"+Date.now();
     old.learnerId = id; old.aiProvider = old.aiProvider || "claude"; old.aiKey = old.aiKey || ""; old.aiModel = old.aiModel || "claude-opus-5";
-    old.geminiKey = old.geminiKey || ""; old.geminiModel = old.geminiModel || "gemini-2.5-flash"; old.aiChat = old.aiChat || [];
+    old.geminiKey = old.geminiKey || ""; old.geminiModel = old.geminiModel || "gemini-3.6-flash"; old.aiChat = old.aiChat || [];
     learners[id] = old;
     saveLearners(learners);
     setActiveId(id);
@@ -1096,6 +1096,7 @@ function logoutLearner(){
   showView("onboarding");
 }
 let state = loadState();
+if(state.geminiModel==="gemini-2.5-flash"){ state.geminiModel="gemini-3.6-flash"; saveState(); }
 
 function ensureTopicProgress(topicId){
   if(!state.progress[topicId]) state.progress[topicId] = {attempts:0, correct:0, conceptViewed:false};
@@ -1647,7 +1648,7 @@ async function callClaude(history){
 }
 async function callGemini(history){
   const key = (state.geminiKey||"").trim();
-  const model = (state.geminiModel||"gemini-2.5-flash").trim();
+  const model = (state.geminiModel||"gemini-3.6-flash").trim();
   const contents = history.map(m=>({role: m.role==="assistant"?"model":"user", parts:[{text:m.content}]}));
   let res;
   try{
@@ -1705,7 +1706,7 @@ function renderCoach(){
   document.getElementById("coachApiKey").value = state.aiKey || "";
   document.getElementById("coachModel").value = state.aiModel || "claude-opus-5";
   document.getElementById("coachGeminiKey").value = state.geminiKey || "";
-  document.getElementById("coachGeminiModel").value = state.geminiModel || "gemini-2.5-flash";
+  document.getElementById("coachGeminiModel").value = state.geminiModel || "gemini-3.6-flash";
   setCoachProvider(state.aiProvider || "claude");
   const box=document.getElementById("coachMessages");
   box.innerHTML = "";
@@ -1927,7 +1928,7 @@ document.getElementById("coachSaveSettings").addEventListener("click",()=>{
   state.aiKey = document.getElementById("coachApiKey").value.trim();
   state.aiModel = document.getElementById("coachModel").value;
   state.geminiKey = document.getElementById("coachGeminiKey").value.trim();
-  state.geminiModel = document.getElementById("coachGeminiModel").value.trim() || "gemini-2.5-flash";
+  state.geminiModel = document.getElementById("coachGeminiModel").value.trim() || "gemini-3.6-flash";
   saveState();
   const btn=document.getElementById("coachSaveSettings");
   const orig=btn.textContent; btn.textContent="Saved ✓"; setTimeout(()=>{btn.textContent=orig;},1200);
