@@ -244,6 +244,23 @@ table.plain th{text-align:left; font-size:.7rem; text-transform:uppercase; lette
 table.plain td{padding:9px 10px; border-bottom:1px solid var(--line); color:var(--ink-soft);}
 table.plain td.num{font-family:"IBM Plex Mono",monospace; color:var(--ink);}
 
+.coach-msg{display:flex; max-width:82%;}
+.coach-msg--user{align-self:flex-end; justify-content:flex-end;}
+.coach-msg--assistant{align-self:flex-start;}
+.coach-bubble{border-radius:12px; padding:11px 14px; font-size:.88rem; line-height:1.55; white-space:pre-wrap;}
+.coach-msg--user .coach-bubble{background:var(--accent); color:#1a1200; border-bottom-right-radius:3px;}
+.coach-msg--assistant .coach-bubble{background:var(--surface-2); border:1px solid var(--line); color:var(--ink); border-bottom-left-radius:3px;}
+.coach-msg--assistant.placeholder .coach-bubble{color:var(--muted); font-style:italic;}
+.coach-empty{text-align:center; color:var(--muted); font-size:.85rem; margin:auto; padding:20px;}
+.switcher{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px;}
+.switcher-card{border:1px solid var(--line); border-radius:11px; padding:12px 16px; background:var(--surface); min-width:180px; text-align:left;}
+.switcher-card:hover{border-color:var(--accent);}
+.switcher-card__name{font-weight:700; font-size:.88rem; margin-bottom:2px;}
+.switcher-card__meta{font-size:.72rem; color:var(--muted);}
+.switcher-new{border:1px dashed var(--line); border-radius:11px; padding:12px 16px; background:transparent; color:var(--ink-soft); font-weight:600; font-size:.85rem; min-width:180px;}
+.callout{background:var(--surface-2); border-left:3px solid var(--accent); border-radius:0 10px 10px 0; padding:14px 18px; margin-bottom:20px; font-size:.87rem; color:var(--ink-soft);}
+.callout strong{color:var(--ink);}
+
 .mode-toggle{display:flex; gap:8px; margin-bottom:16px;}
 .mode-btn{flex:1; border:1px solid var(--line); border-radius:11px; padding:13px; background:var(--surface); text-align:left;}
 .mode-btn.active{border-color:var(--accent); background:var(--accent-soft);}
@@ -279,6 +296,7 @@ table.plain td.num{font-family:"IBM Plex Mono",monospace; color:var(--ink);}
       <button class="navbtn" data-view="learn" disabled><span class="navbtn__ico">▤</span>Learn Concepts</button>
       <button class="navbtn" data-view="practice" disabled><span class="navbtn__ico">✎</span>Practice</button>
       <button class="navbtn" data-view="quiz" disabled><span class="navbtn__ico">◷</span>Quiz &amp; Mock Test</button>
+      <button class="navbtn" data-view="coach" disabled><span class="navbtn__ico">◈</span>AI Coach</button>
       <button class="navbtn" data-view="reports" disabled><span class="navbtn__ico">▦</span>Performance Report</button>
       <div class="navlabel">Behind the Scenes</div>
       <button class="navbtn" data-view="prompts">◆ Prompt Studio</button>
@@ -288,6 +306,7 @@ table.plain td.num{font-family:"IBM Plex Mono",monospace; color:var(--ink);}
     <div class="profile-card" id="sidebarProfileCard" hidden>
       <div class="profile-card__name" id="sbName">—</div>
       <div class="profile-card__meta" id="sbMeta">—</div>
+      <button type="button" class="btn btn--ghost btn--sm" id="sbLogout" style="width:100%; justify-content:center; margin-top:8px; padding:6px;">Log out</button>
     </div>
     <div class="theme-row">
       <button class="theme-btn" data-theme-choice="light">Light</button>
@@ -302,11 +321,12 @@ table.plain td.num{font-family:"IBM Plex Mono",monospace; color:var(--ink);}
     <section class="view" id="view-onboarding">
       <div class="topbar">
         <div>
-          <div class="topbar__eyebrow">Step 1 of 1</div>
-          <h1>Tell AptiGenie about your prep</h1>
+          <div class="topbar__eyebrow" id="onboardEyebrow">Step 1 of 1</div>
+          <h1 id="onboardTitle">Tell AptiGenie about your prep</h1>
           <p style="max-width:60ch">A few details let the coach build a roadmap, question mix and difficulty curve tuned to you — the same profile a real Generative-AI planner would use to condition its prompts.</p>
         </div>
       </div>
+      <div id="learnerSwitcher"></div>
       <div class="grid grid-2">
         <div class="card">
           <h3>Your profile</h3>
@@ -317,12 +337,36 @@ table.plain td.num{font-family:"IBM Plex Mono",monospace; color:var(--ink);}
           <div class="field">
             <label for="pfEdu">Educational background</label>
             <select id="pfEdu">
-              <option>B.E./B.Tech — Computer Engineering</option>
-              <option>B.E./B.Tech — Other Engineering</option>
-              <option>B.Sc / B.Com / BA</option>
-              <option>MCA / M.Sc</option>
-              <option>Diploma</option>
-              <option>Other</option>
+              <optgroup label="School / Diploma">
+                <option>10th / 12th grade (School)</option>
+                <option>Diploma (Polytechnic)</option>
+              </optgroup>
+              <optgroup label="Undergraduate — Engineering">
+                <option>B.E./B.Tech — Computer Science &amp; Engineering</option>
+                <option>B.E./B.Tech — Information Technology</option>
+                <option>B.E./B.Tech — Electronics &amp; Communication</option>
+                <option>B.E./B.Tech — Mechanical Engineering</option>
+                <option>B.E./B.Tech — Civil Engineering</option>
+                <option>B.E./B.Tech — Other Engineering branch</option>
+              </optgroup>
+              <optgroup label="Undergraduate — Other">
+                <option>BCA</option>
+                <option>B.Sc — Computer Science / IT</option>
+                <option>B.Sc — Other Science</option>
+                <option>B.Com / BBA</option>
+                <option>BA</option>
+              </optgroup>
+              <optgroup label="Postgraduate">
+                <option>MCA</option>
+                <option>M.Sc</option>
+                <option>M.Tech</option>
+                <option>MBA</option>
+                <option>PhD / Research Scholar</option>
+              </optgroup>
+              <optgroup label="Other">
+                <option>Working Professional (upskilling)</option>
+                <option>Other</option>
+              </optgroup>
             </select>
           </div>
           <div class="field">
@@ -458,6 +502,45 @@ table.plain td.num{font-family:"IBM Plex Mono",monospace; color:var(--ink);}
       <div id="quizResult" class="hidden"></div>
     </section>
 
+    <!-- AI COACH -->
+    <section class="view" id="view-coach">
+      <div class="topbar">
+        <div>
+          <div class="topbar__eyebrow">Live Assistant</div>
+          <h1>AI Coach</h1>
+          <p style="max-width:66ch">Ask about a concept, request a hint, or say "I'm stuck on Time and Work" — the coach uses your profile for context and can ask you guiding questions back, not just hand you answers. Add your own Anthropic API key below for a real, live conversation; without one, it falls back to a scripted guide so this still works for anyone trying the app without a key.</p>
+        </div>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 300px; align-items:start;">
+        <div class="card" style="display:flex; flex-direction:column; height:540px; padding:0; overflow:hidden;">
+          <div id="coachMessages" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:14px;"></div>
+          <form id="coachForm" style="display:flex; gap:8px; padding:14px; border-top:1px solid var(--line);">
+            <input type="text" id="coachInput" placeholder="Ask AptiGenie anything about your prep..." autocomplete="off" style="flex:1; border:1px solid var(--line); border-radius:9px; padding:10px 13px; background:var(--surface-2); color:var(--ink); font-family:inherit; font-size:.88rem;">
+            <button type="submit" class="btn btn--primary">Send</button>
+          </form>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom:10px;">AI connection</h3>
+          <div class="field">
+            <label for="coachApiKey">Anthropic API key <span class="help">(optional)</span></label>
+            <input type="password" id="coachApiKey" placeholder="sk-ant-...">
+            <span class="help">Stored only in this browser's local storage and sent directly from your browser to Anthropic — never to us or anywhere else. Leave blank to use the built-in scripted guide.</span>
+          </div>
+          <div class="field">
+            <label for="coachModel">Model</label>
+            <select id="coachModel">
+              <option value="claude-opus-5">Claude Opus 5 — most capable</option>
+              <option value="claude-sonnet-5">Claude Sonnet 5 — balanced</option>
+              <option value="claude-haiku-4-5">Claude Haiku 4.5 — fastest / cheapest</option>
+            </select>
+          </div>
+          <button class="btn btn--sm" id="coachSaveSettings" style="width:100%; justify-content:center;">Save connection</button>
+          <button class="btn btn--ghost btn--sm" id="coachClearChat" style="width:100%; justify-content:center; margin-top:6px;">Clear conversation</button>
+          <p class="help" style="margin-top:14px;">This sends the role-prompted system message documented under <a href="javascript:void(0)" data-goto="prompts">Prompt Studio → Live AI Coach</a>, personalized with your profile.</p>
+        </div>
+      </div>
+    </section>
+
     <!-- REPORTS -->
     <section class="view" id="view-reports">
       <div class="topbar">
@@ -478,8 +561,11 @@ table.plain td.num{font-family:"IBM Plex Mono",monospace; color:var(--ink);}
         <div>
           <div class="topbar__eyebrow">Prompt Engineering Layer</div>
           <h1>Prompt Studio</h1>
-          <p style="max-width:70ch">Every piece of AI-generated content in AptiGenie — concept explanations, questions, feedback, roadmaps — is produced from a reusable prompt template, not written ad hoc. This studio documents the exact templates and shows how versions were iteratively refined.</p>
+          <p style="max-width:70ch">Every piece of AI-generated content in AptiGenie — concept explanations, questions, feedback, roadmaps, and the live AI Coach — is produced from a reusable prompt template, not written ad hoc.</p>
         </div>
+      </div>
+      <div class="callout">
+        <strong>What am I looking at?</strong> Think of this as the app's "engine room." Everywhere else in AptiGenie shows you the <em>result</em> of AI generation — a lesson, a question, a piece of feedback. This page shows the actual <em>instructions</em> that produce that result: the exact text that would be sent to a model like Claude, written using specific techniques (role prompting, structured output, few-shot examples, prompt chaining, iterative refinement). For each one you can flip between an early attempt (V1) and the refined version actually used, read why it changed, and — in the playground at the bottom — fill in a real template with your own inputs to see it come together.
       </div>
       <div id="promptStudioBody"></div>
     </section>
@@ -884,19 +970,78 @@ RULES:
   {{attempts}} attempts; focus on {{weakest_subskill}}."
 - If no topic has >=2 attempts, return an empty list (never
   fabricate a weakness from insufficient data).`,
-  why:"v1 was too open-ended to be reusable. v2 added a numeric threshold but would flag a topic after a single unlucky attempt. v3 — reached after reviewing v2's output against real quiz logs — adds a minimum-attempts guard so the recommendation is never drawn from a sample size of one, directly addressing a reliability gap found during testing."}
+  why:"v1 was too open-ended to be reusable. v2 added a numeric threshold but would flag a topic after a single unlucky attempt. v3 — reached after reviewing v2's output against real quiz logs — adds a minimum-attempts guard so the recommendation is never drawn from a sample size of one, directly addressing a reliability gap found during testing."},
+
+ {id:"coach", stage:"6 · Live AI Coach", technique:"Role Prompting (personalized, live)",
+  desc:"The system message sent on every turn of the AI Coach conversation (Coach tab) — this one is not a stand-in, it is the literal prompt used when you connect a real API key.",
+  v1:`You are a helpful assistant. Answer the student's question.`,
+  v2:`You are AptiGenie, a patient, exam-focused aptitude and
+interview-preparation coach for Indian campus placement and
+competitive-exam candidates.
+
+Learner profile: {{name}}, {{education_background}}, targeting
+{{target}}, self-rated {{skill_level}} level, focusing on:
+{{focus_topics}}.
+
+Teach concepts step by step. When the learner is working through
+a problem, ask ONE guiding question before revealing the full
+solution rather than answering immediately. Keep answers focused
+on quantitative aptitude, logical reasoning, verbal ability, or
+interview readiness — if asked something outside that scope,
+gently redirect back to aptitude prep. Keep responses concise
+and exam-practical.`,
+  why:"v1 is a generic assistant persona with no awareness of who it's talking to or what a good aptitude-coaching answer looks like — it would happily solve a problem end-to-end and skip the pedagogy the brief asks for (\"identify weak concepts,\" \"guide,\" not just answer). v2 role-anchors the tutor persona, injects the live learner's actual profile fields so answers are personalized rather than generic, and adds an explicit instruction to ask a guiding question before revealing a solution — turning a Q&A bot into something closer to a Socratic tutor. This is the exact system message the Coach tab sends on every turn when you supply your own API key."}
 ];
 
-/* ---------- State ---------- */
-const STORE_KEY = "aptigenie_state_v1";
-function loadState(){
-  try{
-    const raw = localStorage.getItem(STORE_KEY);
-    if(raw) return JSON.parse(raw);
-  }catch(e){}
-  return {profile:null, progress:{}, quizHistory:[], badges:[], practiceStreak:{}};
+/* ---------- State (multi-learner: each named profile is stored separately, "log out" just clears which one is active) ---------- */
+const LEGACY_STORE_KEY = "aptigenie_state_v1";
+const LEARNERS_KEY = "aptigenie_learners_v1";
+const ACTIVE_KEY = "aptigenie_active_learner_v1";
+
+function defaultState(){
+  return {profile:null, progress:{}, quizHistory:[], badges:[], learnerId:null, aiKey:"", aiModel:"claude-opus-5", aiChat:[]};
 }
-function saveState(){ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+function loadLearners(){
+  try{ return JSON.parse(localStorage.getItem(LEARNERS_KEY)) || {}; }catch(e){ return {}; }
+}
+function saveLearners(map){ localStorage.setItem(LEARNERS_KEY, JSON.stringify(map)); }
+function getActiveId(){ return localStorage.getItem(ACTIVE_KEY) || null; }
+function setActiveId(id){ if(id) localStorage.setItem(ACTIVE_KEY, id); else localStorage.removeItem(ACTIVE_KEY); }
+
+function migrateLegacyState(){
+  const learners = loadLearners();
+  if(Object.keys(learners).length) return;
+  try{
+    const raw = localStorage.getItem(LEGACY_STORE_KEY);
+    if(!raw) return;
+    const old = JSON.parse(raw);
+    if(!old || !old.profile) return;
+    const id = "learner_"+Date.now();
+    old.learnerId = id; old.aiKey = old.aiKey || ""; old.aiModel = old.aiModel || "claude-opus-5"; old.aiChat = old.aiChat || [];
+    learners[id] = old;
+    saveLearners(learners);
+    setActiveId(id);
+  }catch(e){}
+}
+function loadState(){
+  migrateLegacyState();
+  const learners = loadLearners();
+  const activeId = getActiveId();
+  if(activeId && learners[activeId]) return learners[activeId];
+  return defaultState();
+}
+function saveState(){
+  if(!state.learnerId) return;
+  const learners = loadLearners();
+  learners[state.learnerId] = state;
+  saveLearners(learners);
+}
+function logoutLearner(){
+  setActiveId(null);
+  state = defaultState();
+  renderSidebarProfile();
+  showView("onboarding");
+}
 let state = loadState();
 
 function ensureTopicProgress(topicId){
@@ -939,24 +1084,26 @@ function ensureTopicProgress(topicId){
 }
 
 /* ---------- Router ---------- */
-const VIEWS = ["onboarding","dashboard","learn","practice","quiz","reports","prompts"];
+const VIEWS = ["onboarding","dashboard","learn","practice","quiz","coach","reports","prompts"];
 let currentView = "onboarding";
 function showView(name){
   if(!state.profile && !["onboarding","prompts"].includes(name)) name = "onboarding";
   VIEWS.forEach(v=>document.getElementById("view-"+v).classList.toggle("hidden", v!==name));
   document.querySelectorAll(".navbtn[data-view]").forEach(b=>b.classList.toggle("active", b.dataset.view===name));
   currentView = name;
+  if(name==="onboarding") renderLearnerSwitcher();
   if(name==="dashboard") renderDashboard();
   if(name==="learn") renderLearn();
   if(name==="practice") renderPractice();
   if(name==="quiz") renderQuizSetup();
+  if(name==="coach") renderCoach();
   if(name==="reports") renderReports();
   if(name==="prompts") renderPromptStudio();
   window.scrollTo(0,0);
 }
 function unlockNav(){
   document.querySelectorAll(".navbtn[data-view]").forEach(b=>{
-    if(["dashboard","learn","practice","quiz","reports"].includes(b.dataset.view)) b.disabled=false;
+    if(["dashboard","learn","practice","quiz","coach","reports"].includes(b.dataset.view)) b.disabled=false;
   });
 }
 
@@ -988,6 +1135,8 @@ function submitProfile(){
   const topics = Array.from(document.querySelectorAll("#pfTopics .chip.selected")).map(c=>c.dataset.topic);
   state.profile = {name, edu, target, level, prepTime, goals, topics, createdAt: Date.now()};
   state.roadmap = generateRoadmap(state.profile);
+  if(!state.learnerId) state.learnerId = "learner_"+Date.now();
+  setActiveId(state.learnerId);
   if(!state.badges.includes("profile-set")) state.badges.push("profile-set");
   saveState();
   unlockNav();
@@ -1000,6 +1149,28 @@ function renderSidebarProfile(){
   card.hidden=false;
   document.getElementById("sbName").textContent = state.profile.name;
   document.getElementById("sbMeta").textContent = `${state.profile.target} · ${state.profile.level}`;
+}
+function renderLearnerSwitcher(){
+  const box=document.getElementById("learnerSwitcher");
+  const eyebrow=document.getElementById("onboardEyebrow");
+  const title=document.getElementById("onboardTitle");
+  const learners = loadLearners();
+  const others = Object.values(learners).filter(l=>l.profile && l.learnerId!==(state.profile?state.learnerId:null));
+  if(!others.length){ box.innerHTML=""; if(!state.profile){ eyebrow.textContent="Step 1 of 1"; title.textContent="Tell AptiGenie about your prep"; } return; }
+  if(!state.profile){ eyebrow.textContent="Welcome back"; title.textContent="Log in, or set up a new learner"; }
+  box.innerHTML = `<div class="switcher">${others.map(l=>`
+    <button type="button" class="switcher-card" data-learner-id="${l.learnerId}">
+      <div class="switcher-card__name">${escapeHtml(l.profile.name)}</div>
+      <div class="switcher-card__meta">${escapeHtml(l.profile.target)} · ${l.profile.level}</div>
+    </button>`).join("")}
+    <div class="switcher-new">+ New learner profile below</div>
+  </div>`;
+  box.querySelectorAll("[data-learner-id]").forEach(b=>b.addEventListener("click",()=>{
+    const id=b.dataset.learnerId; const learners2=loadLearners();
+    if(!learners2[id]) return;
+    state = learners2[id]; setActiveId(id);
+    unlockNav(); renderSidebarProfile(); showView("dashboard");
+  }));
 }
 
 /* ---------- Roadmap generation (rule-based simulation of the chained prompt in Prompt Studio) ---------- */
@@ -1349,6 +1520,106 @@ function renderQuizResult(record, questions, answers){
   document.getElementById("quizRetakeBtn").addEventListener("click",()=>{ box.classList.add("hidden"); });
 }
 
+/* ---------- AI Coach ---------- */
+function buildCoachSystemPrompt(){
+  const p = state.profile || {};
+  const topicNames = (p.topics && p.topics.length ? p.topics : []).map(id=>{const t=TOPICS.find(x=>x.id===id); return t?t.name:null;}).filter(Boolean).join(", ") || "the full aptitude syllabus";
+  return `You are AptiGenie, a patient, exam-focused aptitude and interview-preparation coach for Indian campus placement and competitive-exam candidates.
+
+Learner profile: ${p.name||"the learner"}, ${p.edu||"unspecified background"}, targeting ${p.target||"campus placements"}, self-rated ${p.level||"intermediate"} level, focusing on: ${topicNames}.
+
+Teach concepts step by step. When the learner is working through a problem, ask ONE guiding question before revealing the full solution rather than answering immediately. Keep answers focused on quantitative aptitude, logical reasoning, verbal ability, or interview readiness — if asked something outside that scope, gently redirect back to aptitude prep. Keep responses concise and exam-practical.`;
+}
+function scriptedCoachReply(userText){
+  const lower = userText.toLowerCase();
+  const hit = TOPICS.find(t=> lower.includes(t.name.toLowerCase()) || lower.includes(t.id.replace(/-/g," ")));
+  if(hit){
+    return `Here's a quick pointer on ${hit.name} (scripted guide — add your API key in "AI connection" for a live, conversational answer):\n\n${hit.concept.intro}\n\nTry this shortcut: ${hit.concept.shortcuts[0]}\n\nHead to Learn → ${hit.name} for the full formula sheet and a worked example, or Practice to try a question yourself.`;
+  }
+  if(/hint|stuck|help|confus/.test(lower)){
+    return `I'm running in scripted mode right now (no API key set), so I can't have a free-form conversation yet — but name a topic (e.g. "help with Time and Work" or "explain Blood Relations") and I'll point you to the right concept and shortcut. Add your own Anthropic API key under "AI connection" to unlock live, guided answers to anything you ask.`;
+  }
+  return `I'm running in scripted mode right now (no API key set). Ask me by naming a topic — e.g. "help with Percentage" — and I'll point you to the right concept and shortcut. Add your own Anthropic API key under "AI connection" (right panel) to unlock live, conversational answers and guidance tailored to whatever you ask.`;
+}
+function renderCoachMessage(role, content, isPlaceholder){
+  const box=document.getElementById("coachMessages");
+  const empty = box.querySelector(".coach-empty"); if(empty) empty.remove();
+  const wrap=document.createElement("div");
+  wrap.className = `coach-msg coach-msg--${role}${isPlaceholder?" placeholder":""}`;
+  if(isPlaceholder) wrap.id="coachPlaceholder";
+  const bubble=document.createElement("div");
+  bubble.className="coach-bubble";
+  bubble.textContent = content;
+  wrap.appendChild(bubble);
+  box.appendChild(wrap);
+  box.scrollTop = box.scrollHeight;
+}
+function appendCoachMessage(role, content, opts){
+  opts = opts || {};
+  if(!opts.placeholder){
+    state.aiChat.push({role, content});
+    saveState();
+  }
+  renderCoachMessage(role, content, opts.placeholder);
+}
+function removeCoachPlaceholder(){
+  const el=document.getElementById("coachPlaceholder");
+  if(el) el.remove();
+}
+async function coachSend(userText){
+  appendCoachMessage("user", userText);
+  const key = (state.aiKey||"").trim();
+  if(!key){
+    setTimeout(()=>appendCoachMessage("assistant", scriptedCoachReply(userText)), 250);
+    return;
+  }
+  appendCoachMessage("assistant", "Thinking…", {placeholder:true});
+  try{
+    const history = state.aiChat.slice(-16).map(m=>({role:m.role, content:m.content}));
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{
+        "content-type":"application/json",
+        "x-api-key": key,
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true"
+      },
+      body: JSON.stringify({
+        model: state.aiModel || "claude-opus-5",
+        max_tokens: 1500,
+        system: buildCoachSystemPrompt(),
+        messages: history
+      })
+    });
+    removeCoachPlaceholder();
+    if(!res.ok){
+      let msg = "The request failed ("+res.status+").";
+      if(res.status===401) msg = "That API key was rejected — double-check it in AI connection.";
+      else if(res.status===429) msg = "Rate limited by the API — wait a moment and try again.";
+      else { try{ const errBody=await res.json(); if(errBody?.error?.message) msg = errBody.error.message; }catch(e){} }
+      appendCoachMessage("assistant", "⚠ "+msg);
+      return;
+    }
+    const data = await res.json();
+    const text = (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n").trim() || "(no response)";
+    appendCoachMessage("assistant", text);
+  }catch(e){
+    removeCoachPlaceholder();
+    appendCoachMessage("assistant", "⚠ Couldn't reach the API — check your internet connection and API key, then try again.");
+  }
+}
+function renderCoach(){
+  document.getElementById("coachApiKey").value = state.aiKey || "";
+  document.getElementById("coachModel").value = state.aiModel || "claude-opus-5";
+  const box=document.getElementById("coachMessages");
+  box.innerHTML = "";
+  if(!state.aiChat.length){
+    box.innerHTML = `<div class="coach-empty">Hi ${escapeHtml((state.profile&&state.profile.name)||"there")} — ask me about any aptitude topic, request a hint on a question you're stuck on, or ask what to revise next.</div>`;
+  } else {
+    state.aiChat.forEach(m=>renderCoachMessage(m.role, m.content, false));
+  }
+}
+
 /* ---------- Reports ---------- */
 function renderReports(){
   refreshBadges();
@@ -1534,6 +1805,25 @@ function wirePromptPlayground(){
 document.querySelectorAll(".navbtn[data-view]").forEach(b=>b.addEventListener("click",()=>{ if(!b.disabled) showView(b.dataset.view); }));
 document.querySelectorAll("[data-goto]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.goto)));
 document.getElementById("editProfileBtn").addEventListener("click",()=>{ prefillOnboarding(); showView("onboarding"); });
+document.getElementById("sbLogout").addEventListener("click",()=>{ logoutLearner(); });
+document.getElementById("coachForm").addEventListener("submit",(e)=>{
+  e.preventDefault();
+  const input=document.getElementById("coachInput");
+  const text=input.value.trim();
+  if(!text) return;
+  input.value="";
+  coachSend(text);
+});
+document.getElementById("coachSaveSettings").addEventListener("click",()=>{
+  state.aiKey = document.getElementById("coachApiKey").value.trim();
+  state.aiModel = document.getElementById("coachModel").value;
+  saveState();
+  const btn=document.getElementById("coachSaveSettings");
+  const orig=btn.textContent; btn.textContent="Saved ✓"; setTimeout(()=>{btn.textContent=orig;},1200);
+});
+document.getElementById("coachClearChat").addEventListener("click",()=>{
+  state.aiChat = []; saveState(); renderCoach();
+});
 document.getElementById("printReportBtn").addEventListener("click", buildAndPrintReport);
 document.querySelectorAll("#quizModeToggle .mode-btn").forEach(b=>b.addEventListener("click",()=>{
   quizMode=b.dataset.mode;
