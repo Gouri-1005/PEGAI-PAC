@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<title>AptiGenie</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F2F3EE; --surface:#FFFFFF; --surface-2:#FBFAF6;
+  --ink:#16213D; --ink-soft:#56617A; --muted:#8B93A6; --line:#DEDCD0;
+  --accent:#C08A3E; --accent-strong:#8F6423; --accent-soft:#F1E4CC;
+  --good:#0ca30c; --good-text:#146b16; --critical:#d03b3b; --warning:#c98200; --serious:#c3653f;
+  --cat-quant:#2a78d6; --cat-logical:#eb6834; --cat-verbal:#1baf7a;
+  --shadow:0 1px 2px rgba(22,33,61,.06),0 8px 24px -12px rgba(22,33,61,.18);
+  --radius:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#11162A; --surface:#1A2038; --surface-2:#1F2645;
+    --ink:#E9E7DD; --ink-soft:#ABB2C8; --muted:#7C84A0; --line:#2C3358;
+    --accent:#D9A44E; --accent-strong:#F0BD6E; --accent-soft:#3A2E17;
+    --good:#3fbf3f; --good-text:#5FCF5F; --critical:#e2685f; --warning:#e0a733; --serious:#e0916f;
+    --cat-quant:#3987e5; --cat-logical:#d95926; --cat-verbal:#199e70;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11162A; --surface:#1A2038; --surface-2:#1F2645;
+  --ink:#E9E7DD; --ink-soft:#ABB2C8; --muted:#7C84A0; --line:#2C3358;
+  --accent:#D9A44E; --accent-strong:#F0BD6E; --accent-soft:#3A2E17;
+  --good:#3fbf3f; --good-text:#5FCF5F; --critical:#e2685f; --warning:#e0a733; --serious:#e0916f;
+  --cat-quant:#3987e5; --cat-logical:#d95926; --cat-verbal:#199e70;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"Public Sans",-apple-system,"Segoe UI",sans-serif;
+  font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:"Fraunces",Georgia,serif; font-weight:600; margin:0 0 .4em; text-wrap:balance; color:var(--ink);}
+h1{font-size:1.9rem; font-weight:700;} h2{font-size:1.35rem;} h3{font-size:1.08rem;} h4{font-size:.95rem;}
+p{margin:0 0 .7em; color:var(--ink-soft);}
+a{color:var(--accent-strong);}
+code,.mono,.num{font-family:"IBM Plex Mono",Consolas,monospace; font-variant-numeric:tabular-nums;}
+button{font-family:inherit; cursor:pointer;}
+.hidden{display:none !important;}
+::selection{background:var(--accent-soft);}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+.shell{display:grid; grid-template-columns:236px 1fr; min-height:100vh;}
+.sidebar{
+  background:var(--surface); border-right:1px solid var(--line);
+  display:flex; flex-direction:column; padding:20px 14px; gap:18px;
+  position:sticky; top:0; height:100vh; overflow-y:auto;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:0 6px;}
+.brand__mark{
+  width:34px; height:34px; border-radius:9px; flex:none;
+  background:linear-gradient(155deg,var(--accent),var(--accent-strong));
+  display:flex; align-items:center; justify-content:center;
+  color:#1a1200; font-family:"Fraunces",serif; font-weight:700; font-size:1.05rem;
+}
+.brand__word{font-family:"Fraunces",serif; font-weight:700; font-size:1.12rem; letter-spacing:-.01em;}
+.brand__tag{font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.09em; margin-top:1px;}
+.navgroup{display:flex; flex-direction:column; gap:2px;}
+.navlabel{font-size:.66rem; text-transform:uppercase; letter-spacing:.09em; color:var(--muted); padding:10px 10px 4px;}
+.navbtn{
+  display:flex; align-items:center; gap:10px; text-align:left;
+  padding:9px 10px; border-radius:9px; border:none; background:transparent;
+  color:var(--ink-soft); font-size:.87rem; font-weight:600; width:100%;
+}
+.navbtn:hover{background:var(--surface-2); color:var(--ink);}
+.navbtn.active{background:var(--accent-soft); color:var(--accent-strong);}
+.navbtn__ico{width:17px; height:17px; flex:none; display:inline-flex;}
+.navbtn__ico svg{width:100%; height:100%;}
+.navbtn:disabled{opacity:.38; cursor:not-allowed;}
+.sidebar__spacer{flex:1;}
+.profile-card{
+  border:1px solid var(--line); border-radius:12px; padding:11px; background:var(--surface-2);
+  font-size:.78rem;
+}
+.profile-card__name{font-weight:700; font-size:.86rem; margin-bottom:1px;}
+.profile-card__meta{color:var(--muted); font-size:.72rem;}
+.theme-row{display:flex; gap:4px; padding:0 6px;}
+.theme-btn{flex:1; border:1px solid var(--line); background:var(--surface); border-radius:8px; padding:6px 0; font-size:.68rem; font-weight:600; color:var(--muted);}
+.theme-btn.active{border-color:var(--accent); color:var(--accent-strong); background:var(--accent-soft);}
+
+.main{padding:26px 34px 60px; max-width:1180px;}
+.topbar{display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:22px; flex-wrap:wrap;}
+.topbar__eyebrow{font-size:.72rem; text-transform:uppercase; letter-spacing:.09em; color:var(--muted); font-weight:600;}
+.topbar__actions{display:flex; gap:8px;}
+
+.btn{border-radius:9px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:.83rem; font-weight:600; padding:9px 15px; display:inline-flex; align-items:center; gap:7px;}
+.btn:hover{border-color:var(--accent);}
+.btn--primary{background:var(--accent); border-color:var(--accent); color:#1a1200;}
+.btn--primary:hover{background:var(--accent-strong); border-color:var(--accent-strong);}
+.btn--ghost{background:transparent; border-color:transparent; color:var(--ink-soft);}
+.btn--ghost:hover{background:var(--surface-2); color:var(--ink);}
+.btn--sm{padding:6px 11px; font-size:.76rem;}
+.btn:disabled{opacity:.45; cursor:not-allowed;}
+
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow);}
+.card + .card{margin-top:16px;}
+.card__head{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px;}
+.grid{display:grid; gap:16px;}
+.grid-2{grid-template-columns:1fr 1fr;}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+@media (max-width:920px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}}
+
+.field{display:flex; flex-direction:column; gap:6px; margin-bottom:16px;}
+.field label{font-size:.78rem; font-weight:600; color:var(--ink-soft);}
+.field input[type=text], .field select, .field textarea{
+  border:1px solid var(--line); border-radius:9px; padding:10px 12px; font-size:.88rem;
+  background:var(--surface-2); color:var(--ink); font-family:inherit;
+}
+.field textarea{resize:vertical; min-height:70px;}
+.help{font-size:.72rem; color:var(--muted);}
+.chip-grid{display:flex; flex-wrap:wrap; gap:7px;}
+.chip{
+  border:1px solid var(--line); border-radius:999px; padding:6px 13px; font-size:.78rem; font-weight:600;
+  background:var(--surface-2); color:var(--ink-soft);
+}
+.chip.selected{background:var(--accent-soft); border-color:var(--accent); color:var(--accent-strong);}
+.radio-row{display:flex; gap:8px; flex-wrap:wrap;}
+.radio-pill{border:1px solid var(--line); border-radius:9px; padding:9px 14px; font-size:.82rem; font-weight:600; background:var(--surface-2); color:var(--ink-soft); flex:1; text-align:center; min-width:120px;}
+.radio-pill.selected{border-color:var(--accent); background:var(--accent-soft); color:var(--accent-strong);}
+
+.tag{display:inline-flex; align-items:center; gap:5px; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:3px 9px; border-radius:999px;}
+.tag--quant{color:var(--cat-quant); background:color-mix(in srgb, var(--cat-quant) 14%, transparent);}
+.tag--logical{color:var(--cat-logical); background:color-mix(in srgb, var(--cat-logical) 14%, transparent);}
+.tag--verbal{color:var(--cat-verbal); background:color-mix(in srgb, var(--cat-verbal) 14%, transparent);}
+.diff{font-size:.66rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:3px 8px; border-radius:6px; color:var(--ink-soft); background:var(--surface-2); border:1px solid var(--line);}
+.diff--easy{color:var(--good-text);} .diff--medium{color:var(--warning);} .diff--hard{color:var(--critical);}
+
+.stat-tile{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px;}
+.stat-tile__label{font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:600; margin-bottom:6px;}
+.stat-tile__value{font-family:"IBM Plex Mono",monospace; font-size:1.7rem; font-weight:600; color:var(--ink);}
+.stat-tile__sub{font-size:.74rem; color:var(--muted); margin-top:3px;}
+
+.topiclist{display:flex; flex-direction:column; gap:6px;}
+.topicitem{display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:10px; border:1px solid transparent; background:var(--surface-2); text-align:left; width:100%;}
+.topicitem:hover{border-color:var(--line);}
+.topicitem.active{background:var(--accent-soft); border-color:var(--accent);}
+.topicitem__dot{width:8px; height:8px; border-radius:50%; flex:none;}
+.topicitem__name{flex:1; font-weight:600; font-size:.85rem;}
+.topicitem__pct{font-family:"IBM Plex Mono",monospace; font-size:.72rem; color:var(--muted);}
+.topicitem.locked{opacity:.5;}
+
+.formula-list{list-style:none; margin:0 0 14px; padding:0; display:flex; flex-direction:column; gap:7px;}
+.formula-list li{background:var(--surface-2); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:9px 12px; font-family:"IBM Plex Mono",monospace; font-size:.82rem; color:var(--ink);}
+.steps{margin:0; padding-left:1.15em; display:flex; flex-direction:column; gap:5px;}
+.steps li{font-size:.87rem; color:var(--ink-soft);}
+.shortcuts{margin:0; padding-left:1.15em; display:flex; flex-direction:column; gap:6px;}
+.shortcuts li{font-size:.86rem;}
+.example-box{background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin:10px 0;}
+.realworld{border-left:3px solid var(--cat-verbal); padding-left:12px; font-size:.86rem; font-style:italic; color:var(--ink-soft);}
+
+.qcard{border:1px solid var(--line); border-radius:12px; padding:18px; background:var(--surface);}
+.qcard__meta{display:flex; gap:8px; align-items:center; margin-bottom:10px;}
+.qcard__text{font-size:1rem; font-weight:600; margin-bottom:14px; color:var(--ink);}
+.options{display:flex; flex-direction:column; gap:8px;}
+.option{
+  display:flex; align-items:center; gap:10px; text-align:left; width:100%;
+  border:1px solid var(--line); border-radius:9px; padding:11px 13px; background:var(--surface-2); color:var(--ink);
+  font-size:.87rem;
+}
+.option:hover:not(:disabled){border-color:var(--accent);}
+.option__letter{width:22px; height:22px; flex:none; border-radius:6px; background:var(--surface); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-family:"IBM Plex Mono",monospace; font-size:.72rem; font-weight:600;}
+.option.selected{border-color:var(--accent);}
+.option.correct{border-color:var(--good); background:color-mix(in srgb, var(--good) 12%, var(--surface));}
+.option.correct .option__letter{background:var(--good); color:#fff; border-color:var(--good);}
+.option.incorrect{border-color:var(--critical); background:color-mix(in srgb, var(--critical) 12%, var(--surface));}
+.option.incorrect .option__letter{background:var(--critical); color:#fff; border-color:var(--critical);}
+.option:disabled{cursor:default;}
+.solution-box{margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);}
+.solution-box__label{font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; font-weight:700; color:var(--accent-strong); margin-bottom:8px;}
+.feedback-banner{border-radius:9px; padding:9px 13px; font-size:.83rem; font-weight:600; margin-bottom:12px; display:flex; align-items:center; gap:8px;}
+.feedback-banner.ok{background:color-mix(in srgb, var(--good) 15%, var(--surface)); color:var(--good-text);}
+.feedback-banner.bad{background:color-mix(in srgb, var(--critical) 15%, var(--surface)); color:var(--critical);}
+
+.timer{font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:1rem; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:8px 14px; display:inline-flex; align-items:center; gap:7px;}
+.timer.low{color:var(--critical); border-color:var(--critical);}
+.progressbar{height:8px; border-radius:99px; background:var(--surface-2); border:1px solid var(--line); overflow:hidden;}
+.progressbar__fill{height:100%; background:var(--accent); border-radius:99px;}
+
+.bar-row{display:grid; grid-template-columns:150px 1fr 52px; align-items:center; gap:10px; margin-bottom:10px;}
+.bar-row__label{font-size:.8rem; font-weight:600; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.bar-track{height:14px; border-radius:6px; background:var(--surface-2); border:1px solid var(--line); overflow:hidden; position:relative;}
+.bar-fill{height:100%; border-radius:6px 0 0 6px;}
+.bar-row__val{font-family:"IBM Plex Mono",monospace; font-size:.76rem; text-align:right; color:var(--ink-soft);}
+.legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:.74rem; color:var(--muted);}
+.legend__item{display:flex; align-items:center; gap:6px;}
+.legend__swatch{width:10px; height:10px; border-radius:3px;}
+
+.badge-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px;}
+.badge-item{display:flex; gap:11px; align-items:flex-start; padding:13px; border-radius:11px; border:1px solid var(--line); background:var(--surface-2);}
+.badge-item.earned{background:var(--accent-soft); border-color:var(--accent);}
+.badge-item.locked{opacity:.42;}
+.badge-mono{width:34px; height:34px; border-radius:9px; flex:none; display:flex; align-items:center; justify-content:center; font-family:"Fraunces",serif; font-weight:700; font-size:.95rem; background:var(--surface); border:1px solid var(--line); color:var(--muted);}
+.badge-item.earned .badge-mono{background:var(--accent); color:#1a1200; border-color:var(--accent);}
+.badge-item__name{font-size:.84rem; font-weight:700;}
+.badge-item__desc{font-size:.74rem; color:var(--muted);}
+
+.roadmap{display:flex; flex-direction:column; gap:0;}
+.week{display:grid; grid-template-columns:70px 1fr; gap:16px; position:relative; padding-bottom:22px;}
+.week::before{content:""; position:absolute; left:34px; top:30px; bottom:0; width:1px; background:var(--line);}
+.week:last-child::before{display:none;}
+.week__num{width:52px; height:52px; border-radius:50%; background:var(--surface-2); border:2px solid var(--line); display:flex; align-items:center; justify-content:center; font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:.78rem; text-align:center; flex:none; z-index:1;}
+.week.done .week__num{border-color:var(--good); color:var(--good-text);}
+.week__body{background:var(--surface-2); border:1px solid var(--line); border-radius:11px; padding:13px 15px;}
+.week__title{font-weight:700; font-size:.9rem; margin-bottom:4px;}
+.week__milestone{font-size:.8rem; color:var(--ink-soft); margin-bottom:8px;}
+.week__tags{display:flex; gap:6px; flex-wrap:wrap;}
+
+.promptcard{border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-bottom:16px;}
+.promptcard__head{background:var(--surface-2); padding:13px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+.promptcard__technique{font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--accent-strong); background:var(--accent-soft); padding:4px 10px; border-radius:999px;}
+.promptcard__body{padding:15px 16px;}
+.versiontabs{display:flex; gap:6px; margin-bottom:12px;}
+.vtab{border:1px solid var(--line); background:var(--surface); border-radius:7px; padding:5px 11px; font-size:.74rem; font-weight:700;}
+.vtab.active{background:var(--accent); border-color:var(--accent); color:#1a1200;}
+.promptbox{background:var(--ink); color:#e9e7dd; border-radius:9px; padding:14px 16px; font-family:"IBM Plex Mono",monospace; font-size:.78rem; line-height:1.7; white-space:pre-wrap; overflow-x:auto;}
+:root:not([data-theme="light"]) .promptbox{background:#05070f;}
+:root[data-theme="dark"] .promptbox{background:#05070f;}
+.promptnote{font-size:.8rem; color:var(--ink-soft); margin-top:10px; border-left:3px solid var(--accent); padding-left:11px;}
+.output-preview{background:var(--surface-2); border:1px dashed var(--line); border-radius:9px; padding:13px 15px; margin-top:12px; font-size:.85rem;}
+.output-preview__label{font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:700; margin-bottom:6px;}
+
+.emptystate{text-align:center; padding:40px 20px; color:var(--muted);}
+.emptystate h3{color:var(--ink-soft);}
+
+table.plain{width:100%; border-collapse:collapse; font-size:.83rem;}
+table.plain th{text-align:left; font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); padding:8px 10px; border-bottom:1px solid var(--line);}
+table.plain td{padding:9px 10px; border-bottom:1px solid var(--line); color:var(--ink-soft);}
+table.plain td.num{font-family:"IBM Plex Mono",monospace; color:var(--ink);}
+
+.mode-toggle{display:flex; gap:8px; margin-bottom:16px;}
+.mode-btn{flex:1; border:1px solid var(--line); border-radius:11px; padding:13px; background:var(--surface); text-align:left;}
+.mode-btn.active{border-color:var(--accent); background:var(--accent-soft);}
+.mode-btn__title{font-weight:700; font-size:.87rem; margin-bottom:2px;}
+.mode-btn__desc{font-size:.75rem; color:var(--muted);}
+
+@media print{
+  .sidebar, .topbar__actions, .no-print{display:none !important;}
+  .shell{display:block;}
+  .main{max-width:100%; padding:0;}
+  body{background:#fff; color:#000;}
+  .card{box-shadow:none; border:1px solid #ccc;}
+}
+@media (max-width:860px){
+  .shell{grid-template-columns:1fr;}
+  .sidebar{position:relative; height:auto; flex-direction:row; flex-wrap:wrap; align-items:center;}
+  .navgroup{flex-direction:row; flex-wrap:wrap;}
+  .main{padding:18px;}
+}
+</style>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand__mark">Ag</div>
+      <div>
+        <div class="brand__word">AptiGenie</div>
+        <div class="brand__tag">AI Aptitude Coach</div>
+      </div>
+    </div>
+    <nav class="navgroup" id="mainNav">
+      <div class="navlabel">Coach</div>
+      <button class="navbtn" data-view="dashboard" disabled><span class="navbtn__ico">●</span>Dashboard</button>
+      <button class="navbtn" data-view="learn" disabled><span class="navbtn__ico">▤</span>Learn Concepts</button>
+      <button class="navbtn" data-view="practice" disabled><span class="navbtn__ico">✎</span>Practice</button>
+      <button class="navbtn" data-view="quiz" disabled><span class="navbtn__ico">◷</span>Quiz &amp; Mock Test</button>
+      <button class="navbtn" data-view="reports" disabled><span class="navbtn__ico">▦</span>Performance Report</button>
+      <div class="navlabel">Behind the Scenes</div>
+      <button class="navbtn" data-view="prompts">◆ Prompt Studio</button>
+      <button class="navbtn" data-view="onboarding">👤 Profile</button>
+    </nav>
+    <div class="sidebar__spacer"></div>
+    <div class="profile-card" id="sidebarProfileCard" hidden>
+      <div class="profile-card__name" id="sbName">—</div>
+      <div class="profile-card__meta" id="sbMeta">—</div>
+    </div>
+    <div class="theme-row">
+      <button class="theme-btn" data-theme-choice="light">Light</button>
+      <button class="theme-btn" data-theme-choice="system">Auto</button>
+      <button class="theme-btn" data-theme-choice="dark">Dark</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ONBOARDING -->
+    <section class="view" id="view-onboarding">
+      <div class="topbar">
+        <div>
+          <div class="topbar__eyebrow">Step 1 of 1</div>
+          <h1>Tell AptiGenie about your prep</h1>
+          <p style="max-width:60ch">A few details let the coach build a roadmap, question mix and difficulty curve tuned to you — the same profile a real Generative-AI planner would use to condition its prompts.</p>
+        </div>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Your profile</h3>
+          <div class="field">
+            <label for="pfName">Name</label>
+            <input type="text" id="pfName" placeholder="e.g. Aditi Sharma">
+          </div>
+          <div class="field">
+            <label for="pfEdu">Educational background</label>
+            <select id="pfEdu">
+              <option>B.E./B.Tech — Computer Engineering</option>
+              <option>B.E./B.Tech — Other Engineering</option>
+              <option>B.Sc / B.Com / BA</option>
+              <option>MCA / M.Sc</option>
+              <option>Diploma</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="pfTarget">Target company or examination</label>
+            <input type="text" id="pfTarget" placeholder="e.g. TCS NQT, Infosys, CAT, Bank PO">
+          </div>
+          <div class="field">
+            <label>Current skill level</label>
+            <div class="radio-row" id="pfLevel">
+              <button type="button" class="radio-pill" data-val="beginner">Beginner</button>
+              <button type="button" class="radio-pill selected" data-val="intermediate">Intermediate</button>
+              <button type="button" class="radio-pill" data-val="advanced">Advanced</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="pfTime">Available preparation time</label>
+            <select id="pfTime">
+              <option value="2w">2 weeks</option>
+              <option value="1m" selected>1 month</option>
+              <option value="3m">3 months</option>
+            </select>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Focus topics</h3>
+          <p class="help" style="margin-top:-8px">Pick what you want AptiGenie to prioritize. Leave blank for a full syllabus roadmap.</p>
+          <div class="chip-grid" id="pfTopics"></div>
+          <div class="field" style="margin-top:16px">
+            <label for="pfGoals">Learning goals <span class="help">(optional)</span></label>
+            <textarea id="pfGoals" placeholder="e.g. Clear the TCS NQT cut-off, get faster at Time &amp; Work and DI"></textarea>
+          </div>
+          <button class="btn btn--primary" id="pfSubmit" style="width:100%; justify-content:center; padding:12px;">Generate my roadmap</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section class="view" id="view-dashboard">
+      <div class="topbar">
+        <div>
+          <div class="topbar__eyebrow">Dashboard</div>
+          <h1 id="dashGreeting">Welcome back</h1>
+        </div>
+        <div class="topbar__actions">
+          <button class="btn" id="editProfileBtn">Edit profile</button>
+          <button class="btn btn--primary" data-goto="practice">Resume practice</button>
+        </div>
+      </div>
+
+      <div class="grid grid-4" id="dashStats" style="margin-bottom:16px;"></div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card__head"><h3>Your personalized roadmap</h3></div>
+          <div class="roadmap" id="roadmapBox"></div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card__head"><h3>Weak-area recommendations</h3></div>
+            <div id="weakAreaBox"></div>
+          </div>
+          <div class="card">
+            <div class="card__head"><h3>Badges</h3></div>
+            <div class="badge-grid" id="badgeBoxSmall"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEARN -->
+    <section class="view" id="view-learn">
+      <div class="topbar">
+        <div>
+          <div class="topbar__eyebrow">Concept Learning</div>
+          <h1>Learn a topic</h1>
+        </div>
+      </div>
+      <div class="grid" style="grid-template-columns:270px 1fr; align-items:start;">
+        <div class="card">
+          <h3 style="margin-bottom:12px;">Topics</h3>
+          <div class="topiclist" id="learnTopicList"></div>
+        </div>
+        <div class="card" id="learnDetail"></div>
+      </div>
+    </section>
+
+    <!-- PRACTICE -->
+    <section class="view" id="view-practice">
+      <div class="topbar">
+        <div>
+          <div class="topbar__eyebrow">Practice</div>
+          <h1>Adaptive practice questions</h1>
+        </div>
+      </div>
+      <div class="grid" style="grid-template-columns:270px 1fr; align-items:start;">
+        <div class="card">
+          <h3 style="margin-bottom:12px;">Choose a topic</h3>
+          <div class="topiclist" id="practiceTopicList"></div>
+        </div>
+        <div id="practiceMain">
+          <div class="card emptystate"><h3>Pick a topic to begin</h3><p>Questions adapt: two correct answers in a row raises the difficulty; a miss brings it back down.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section class="view" id="view-quiz">
+      <div class="topbar">
+        <div>
+          <div class="topbar__eyebrow">Assessment</div>
+          <h1>Quiz &amp; mock tests</h1>
+        </div>
+      </div>
+      <div id="quizSetup" class="card">
+        <div class="mode-toggle" id="quizModeToggle">
+          <button class="mode-btn active" data-mode="topic">
+            <div class="mode-btn__title">Topic Quiz</div>
+            <div class="mode-btn__desc">5 questions from one topic, 5 minutes</div>
+          </button>
+          <button class="mode-btn" data-mode="section">
+            <div class="mode-btn__title">Section Test</div>
+            <div class="mode-btn__desc">10 questions from one category, 10 minutes</div>
+          </button>
+          <button class="mode-btn" data-mode="mock">
+            <div class="mode-btn__title">Full Mock Test</div>
+            <div class="mode-btn__desc">26 questions, all topics, 20 minutes</div>
+          </button>
+        </div>
+        <div id="quizModeOptions"></div>
+        <button class="btn btn--primary" id="startQuizBtn" style="margin-top:14px;">Start</button>
+      </div>
+      <div id="quizRunner" class="hidden"></div>
+      <div id="quizResult" class="hidden"></div>
+    </section>
+
+    <!-- REPORTS -->
+    <section class="view" id="view-reports">
+      <div class="topbar">
+        <div>
+          <div class="topbar__eyebrow">Analytics</div>
+          <h1>Performance report</h1>
+        </div>
+        <div class="topbar__actions">
+          <button class="btn" id="printReportBtn">Download / print report</button>
+        </div>
+      </div>
+      <div id="reportsBody"></div>
+    </section>
+
+    <!-- PROMPT STUDIO -->
+    <section class="view" id="view-prompts">
+      <div class="topbar">
+        <div>
+          <div class="topbar__eyebrow">Prompt Engineering Layer</div>
+          <h1>Prompt Studio</h1>
+          <p style="max-width:70ch">Every piece of AI-generated content in AptiGenie — concept explanations, questions, feedback, roadmaps — is produced from a reusable prompt template, not written ad hoc. This studio documents the exact templates and shows how versions were iteratively refined.</p>
+        </div>
+      </div>
+      <div id="promptStudioBody"></div>
+    </section>
+
+  </main>
+</div>
+<div id="printReportRoot" class="hidden"></div>
+<script>
+"use strict";
+const CAT_LABEL = {quant:"Quantitative", logical:"Logical Reasoning", verbal:"Verbal Ability"};
+
+const TOPICS = [
+{id:"number-system", name:"Number System", category:"quant",
+ concept:{
+  intro:"Number System covers integers, divisibility, factors and remainders — the base layer nearly every other quant topic builds on.",
+  formulas:["HCF × LCM = Product of two numbers (for exactly two numbers)","A number leaving the same remainder r with several divisors = LCM(divisors) × k + r","Number of factors of N = a^p × b^q × c^r is (p+1)(q+1)(r+1)"],
+  example:{problem:"Find the HCF and LCM of 12 and 18, and verify HCF × LCM = 12 × 18.",
+   steps:["12 = 2²×3, 18 = 2×3²","HCF = 2×3 = 6","LCM = 2²×3² = 36","Check: 6×36 = 216 = 12×18 ✓"]},
+  shortcuts:["To test divisibility by 11, alternately add/subtract digits — divisible if the result is 0 or a multiple of 11.","For 'remainder' problems, always convert to LCM + fixed remainder before touching the actual number.","Prime-factorize first — almost every number-system question collapses once you have the prime factors."],
+  realWorld:"The same remainder logic powers scheduling problems (buses arriving together) and cryptographic checksums."},
+ questions:[
+  {difficulty:"easy", text:"What is the remainder when 7^100 is divided by 5?", options:["0","1","2","4"], answer:1,
+   steps:["7 mod 5 = 2, so 7^100 mod 5 behaves like 2^100 mod 5.","Powers of 2 mod 5 cycle every 4 steps: 2, 4, 3, 1, 2, 4, 3, 1…","100 is a multiple of 4 (100 = 4×25), landing on the 4th term of the cycle → remainder 1."]},
+  {difficulty:"easy", text:"Find the HCF of 36 and 60.", options:["6","12","18","24"], answer:1,
+   steps:["36 = 2²×3²","60 = 2²×3×5","Common factors: 2² and 3¹ → HCF = 4×3 = 12."]},
+  {difficulty:"medium", text:"A number, when divided by 342, leaves a remainder of 47. What remainder is left when the same number is divided by 18?", options:["11","13","5","7"], answer:0,
+   steps:["342 = 18 × 19, so 342 is an exact multiple of 18.","Number = 342k + 47 = 18(19k) + 47.","47 ÷ 18 = 2 remainder 11 → overall remainder is 11."]},
+  {difficulty:"medium", text:"Find the smallest number which, when divided by 5, 6, 7 and 8, leaves a remainder of 3 in each case.", options:["840","843","846","850"], answer:1,
+   steps:["LCM(5,6,7,8) = 840.","A number leaving the same remainder 3 with every divisor is LCM + remainder.","840 + 3 = 843."]},
+  {difficulty:"hard", text:"How many total factors does 360 have?", options:["18","20","24","28"], answer:2,
+   steps:["360 = 2³ × 3² × 5¹.","Number of factors = (3+1)(2+1)(1+1) = 4×3×2 = 24."]}
+ ]},
+
+{id:"percentage", name:"Percentage", category:"quant",
+ concept:{
+  intro:"Percentage is the language of change — used everywhere from discounts to salary hikes to exam cut-offs.",
+  formulas:["% change = (Change / Original) × 100","Successive % changes combine multiplicatively: (1 ± r1/100)(1 ± r2/100)","x% of y = y% of x — flip to whichever is easier to compute"],
+  example:{problem:"The price of an item rises from ₹250 to ₹300. Find the percentage increase.",
+   steps:["Change = 300 − 250 = 50","% increase = 50/250 × 100 = 20%"]},
+  shortcuts:["Never add successive percentages directly — a 10% rise then a 10% fall is a net 1% FALL, not 0%.","Convert awkward percentages to fractions: 12.5% = 1/8, 33.33% = 1/3 — division becomes instant.","'x% of y = y% of x' — flip to whichever number is nicer to compute mentally."],
+  realWorld:"Interest rates, exam cut-offs, GST calculations and salary hikes are all direct percentage applications."},
+ questions:[
+  {difficulty:"easy", text:"What is 40% of 250?", options:["90","100","110","120"], answer:1,
+   steps:["40% of 250 = (40/100) × 250 = 100."]},
+  {difficulty:"medium", text:"A's salary is 25% more than B's. By what percentage is B's salary less than A's?", options:["25%","20%","30%","22.5%"], answer:1,
+   steps:["Let B = 100, then A = 125.","B is less than A by (125−100)/125 × 100 = 20%."]},
+  {difficulty:"medium", text:"In an exam, 65% of students passed. If 210 students failed, how many appeared for the exam?", options:["500","550","600","650"], answer:2,
+   steps:["Failed % = 100 − 65 = 35%.","0.35 × Total = 210 → Total = 210/0.35 = 600."]},
+  {difficulty:"medium", text:"A quantity increases by 10% in year one and decreases by 10% in year two. What is the net percentage change?", options:["0%","−1%","+1%","−2%"], answer:1,
+   steps:["Net factor = 1.10 × 0.90 = 0.99.","This is a 1% decrease overall, because the base changed after year one."]},
+  {difficulty:"hard", text:"A marked price of ₹1000 gets successive discounts of 20% and 10%. Find the final selling price.", options:["₹700","₹720","₹730","₹680"], answer:1,
+   steps:["After 20% discount: 1000 × 0.8 = 800.","After a further 10% discount: 800 × 0.9 = 720."]}
+ ]},
+
+{id:"profit-loss", name:"Profit and Loss", category:"quant",
+ concept:{
+  intro:"Profit and Loss converts buying/selling prices into percentage performance — the core of retail and negotiation math.",
+  formulas:["Profit% = (SP − CP)/CP × 100","Loss% = (CP − SP)/CP × 100","SP = CP × (1 ± %/100)","False-weight profit% = (True value − False value)/False value × 100"],
+  example:{problem:"An article is bought for ₹800 and sold for ₹920. Find the profit percentage.",
+   steps:["Profit = 920 − 800 = 120","Profit% = 120/800 × 100 = 15%"]},
+  shortcuts:["Marked price → SP after discount: multiply by (1 − discount/100).","Chain multiple markups/discounts as one multiplying factor before computing the final %.","False-weight dealer problems are a straight profit-percentage question using true weight vs claimed weight."],
+  realWorld:"Retail pricing strategy, e-commerce discount stacking and vendor negotiation all use these formulas directly."},
+ questions:[
+  {difficulty:"easy", text:"An article bought for ₹500 is sold for ₹600. Find the profit percentage.", options:["15%","20%","25%","10%"], answer:1,
+   steps:["Profit = 600 − 500 = 100.","Profit% = 100/500 × 100 = 20%."]},
+  {difficulty:"medium", text:"An item is sold at a loss of 10% for ₹900. Find its cost price.", options:["₹950","₹990","₹1000","₹1010"], answer:2,
+   steps:["SP = 0.90 × CP.","900 = 0.9 × CP → CP = 900/0.9 = 1000."]},
+  {difficulty:"easy", text:"A shirt marked at ₹1200 is sold at a 15% discount. Find the selling price.", options:["₹1000","₹1020","₹1050","₹1080"], answer:1,
+   steps:["SP = 1200 × (1 − 0.15) = 1200 × 0.85 = 1020."]},
+  {difficulty:"medium", text:"A shopkeeper marks up goods by 40% and then gives a 10% discount. Find his net profit percentage.", options:["24%","26%","30%","28%"], answer:1,
+   steps:["Markup factor = 1.40, discount factor = 0.90.","Net factor = 1.40 × 0.90 = 1.26 → 26% profit."]},
+  {difficulty:"hard", text:"A dishonest dealer sells goods at cost price but uses a 900 g weight instead of 1 kg. Find his profit percentage.", options:["10%","11.11%","9%","12%"], answer:1,
+   steps:["He gives 900 g but charges for 1000 g.","Profit% = (1000 − 900)/900 × 100 = 11.11%."]}
+ ]},
+
+{id:"ratio-proportion", name:"Ratio and Proportion", category:"quant",
+ concept:{
+  intro:"Ratio and Proportion compares quantities without fixing their absolute size — the tool behind mixing, splitting and scaling problems.",
+  formulas:["To divide total T in ratio a:b:c, each part = T × (part / (a+b+c))","Matching a common term: if a:b = x:y and b:c = y:z, then a:b:c = x:y:z (after scaling to match b)","Componendo-dividendo: if a/b = c/d then (a+b)/(a−b) = (c+d)/(c−d)"],
+  example:{problem:"Divide ₹720 among A, B and C in the ratio 2:3:4.",
+   steps:["Total parts = 2+3+4 = 9","1 part = 720/9 = 80","Shares: 160, 240, 320"]},
+  shortcuts:["To combine two ratios sharing a common term, scale both so that term matches before merging.","Convert ratio problems to a single variable 'x' immediately — it turns algebra into arithmetic.","Ratios are scale-free: always double-check by re-adding the parts back to the total."],
+  realWorld:"Mixing solutions, splitting business profits and recipe scaling all rely on ratio logic."},
+ questions:[
+  {difficulty:"easy", text:"Divide ₹720 among A, B, C in the ratio 2:3:4. Find C's share.", options:["₹160","₹240","₹320","₹360"], answer:2,
+   steps:["Total parts = 2+3+4 = 9.","1 part = 720/9 = 80.","C's share = 4 × 80 = 320."]},
+  {difficulty:"medium", text:"If a:b = 3:4 and b:c = 5:6, find a:b:c.", options:["15:20:24","12:16:20","9:12:15","15:20:30"], answer:0,
+   steps:["Make b common: a:b = 3:4 = 15:20, b:c = 5:6 = 20:24.","So a:b:c = 15:20:24."]},
+  {difficulty:"easy", text:"Two numbers are in the ratio 5:6 and their sum is 143. Find the larger number.", options:["65","70","78","72"], answer:2,
+   steps:["Let the numbers be 5x and 6x.","5x + 6x = 143 → x = 13.","Larger number = 6 × 13 = 78."]},
+  {difficulty:"hard", text:"If x/y = 3/5, find the value of (2x+3y)/(3x−y).", options:["21/4","19/4","21/5","17/4"], answer:0,
+   steps:["Let x = 3k, y = 5k.","(2(3k)+3(5k)) / (3(3k)−5k) = (6k+15k)/(9k−5k) = 21k/4k = 21/4."]}
+ ]},
+
+{id:"time-work", name:"Time and Work", category:"quant",
+ concept:{
+  intro:"Time and Work measures productivity as a rate — the same math that governs staffing and pipeline-filling problems.",
+  formulas:["If A takes 'a' days for a job, A's one-day work = 1/a","Combined one-day work = sum of individual one-day works","Time to finish together = 1 / (combined one-day work)"],
+  example:{problem:"A finishes a job in 10 days, B in 15 days. How long do they take working together?",
+   steps:["A's rate = 1/10, B's rate = 1/15","Combined rate = 3/30 + 2/30 = 5/30 = 1/6","Together they take 6 days"]},
+  shortcuts:["Use the LCM of the given days as 'total work units' — rates become whole numbers instead of fractions.","'Twice as efficient' means half the time and double the daily rate — convert efficiency ratios directly to rate ratios.","For men-days problems, keep (men × days) constant unless the work quantity changes."],
+  realWorld:"Project staffing, server-load balancing and pipeline-filling problems are all time-and-work in disguise."},
+ questions:[
+  {difficulty:"easy", text:"A can finish a job in 12 days and B in 18 days. Working together, how many days will they take?", options:["6 days","7.2 days","8 days","9 days"], answer:1,
+   steps:["A's 1-day work = 1/12, B's = 1/18.","Together = 1/12+1/18 = 3/36+2/36 = 5/36.","Time = 36/5 = 7.2 days."]},
+  {difficulty:"medium", text:"A and B together complete a task in 6 days. A alone can do it in 10 days. In how many days can B alone complete it?", options:["12 days","15 days","18 days","20 days"], answer:1,
+   steps:["Together rate = 1/6, A's rate = 1/10.","B's rate = 1/6−1/10 = 5/30−3/30 = 2/30 = 1/15.","B alone takes 15 days."]},
+  {difficulty:"medium", text:"15 men can complete a work in 20 days. How many men are needed to finish it in 12 days?", options:["20","22","25","30"], answer:2,
+   steps:["Total man-days = 15×20 = 300.","Men needed for 12 days = 300/12 = 25."]},
+  {difficulty:"hard", text:"A is twice as efficient as B. Working together they finish a job in 12 days. How long would A alone take?", options:["16 days","18 days","20 days","24 days"], answer:1,
+   steps:["Let B's rate = x, A's rate = 2x.","Together: 3x = 1/12 → x = 1/36.","A's rate = 2/36 = 1/18 → A alone takes 18 days."]}
+ ]},
+
+{id:"tsd", name:"Time, Speed and Distance", category:"quant",
+ concept:{
+  intro:"Time, Speed and Distance ties three quantities together — the foundation for train, boat and race problems.",
+  formulas:["Distance = Speed × Time","km/h → m/s: × 5/18; m/s → km/h: × 18/5","Relative speed: same direction = difference of speeds; opposite direction = sum of speeds","Boats: downstream = boat+stream, upstream = boat−stream"],
+  example:{problem:"A 150 m long train crosses a pole in 15 seconds. Find its speed in km/h.",
+   steps:["Speed = 150/15 = 10 m/s","Convert: 10 × 18/5 = 36 km/h"]},
+  shortcuts:["'Crossing a pole' = train covers its own length; 'crossing a platform' = train covers (length of train + platform).","Fix units first — mixing km/h and m/s is the #1 error source in this topic.","For meeting/crossing problems, relative speed collapses two unknowns into one equation."],
+  realWorld:"Traffic scheduling, logistics ETAs and race-condition problems in computing borrow this exact relative-speed logic."},
+ questions:[
+  {difficulty:"easy", text:"A car travels at 60 km/h for 2.5 hours. Find the distance covered.", options:["120 km","140 km","150 km","160 km"], answer:2,
+   steps:["Distance = Speed × Time = 60 × 2.5 = 150 km."]},
+  {difficulty:"easy", text:"Convert 72 km/h into m/s.", options:["18 m/s","20 m/s","22 m/s","24 m/s"], answer:1,
+   steps:["km/h to m/s: multiply by 5/18.","72 × 5/18 = 20 m/s."]},
+  {difficulty:"medium", text:"A 150 m long train crosses a pole in 15 seconds. Find its speed in km/h.", options:["30 km/h","33 km/h","36 km/h","40 km/h"], answer:2,
+   steps:["Speed = 150/15 = 10 m/s.","Convert to km/h: 10 × 18/5 = 36 km/h."]},
+  {difficulty:"medium", text:"Two trains of length 100 m and 150 m move towards each other at 40 km/h and 50 km/h. Find the time they take to cross each other.", options:["8 s","10 s","12 s","15 s"], answer:1,
+   steps:["Relative speed = 40+50 = 90 km/h = 25 m/s.","Total length = 100+150 = 250 m.","Time = 250/25 = 10 s."]},
+  {difficulty:"hard", text:"A boat's speed in still water is 10 km/h and the stream speed is 2 km/h. Find the total time to travel 24 km upstream and return.", options:["4 h","4.5 h","5 h","5.5 h"], answer:2,
+   steps:["Upstream speed = 10−2 = 8 km/h, downstream = 10+2 = 12 km/h.","Time upstream = 24/8 = 3 h, time downstream = 24/12 = 2 h.","Total time = 3+2 = 5 h."]}
+ ]},
+
+{id:"si-ci", name:"Simple and Compound Interest", category:"quant",
+ concept:{
+  intro:"SI and CI model how money grows over time — with compounding being the single biggest driver of long-term returns.",
+  formulas:["SI = P×R×T/100","CI (annual) = P×(1+R/100)^T − P","For 2 years, CI − SI = P × (R/100)²"],
+  example:{problem:"Find the compound interest on ₹10,000 at 10% per annum for 2 years.",
+   steps:["Amount = 10000×(1.1)² = 12100","CI = 12100 − 10000 = ₹2100"]},
+  shortcuts:["For 2-year CI-vs-SI difference problems, skip full expansion — use CI−SI = P(R/100)² directly.","Break multi-year CI into year-by-year SI-on-growing-principal if the compounding period is unusual.","Approximate small-rate compounding: CI ≈ SI + a small correction term for quick estimation."],
+  realWorld:"Loan EMIs, fixed deposits and inflation-adjusted returns are direct real-world CI applications."},
+ questions:[
+  {difficulty:"easy", text:"Find the simple interest on ₹5000 at 8% per annum for 3 years.", options:["₹1000","₹1100","₹1200","₹1300"], answer:2,
+   steps:["SI = P×R×T/100 = 5000×8×3/100 = 1200."]},
+  {difficulty:"medium", text:"Find the compound interest on ₹10,000 at 10% per annum for 2 years (compounded annually).", options:["₹2000","₹2050","₹2100","₹2200"], answer:2,
+   steps:["Amount = 10000×(1.1)² = 10000×1.21 = 12100.","CI = 12100−10000 = 2100."]},
+  {difficulty:"medium", text:"At what rate percent will ₹4000 amount to ₹4800 in 4 years at simple interest?", options:["4%","5%","6%","4.5%"], answer:1,
+   steps:["SI = 4800−4000 = 800.","Rate = (SI×100)/(P×T) = (800×100)/(4000×4) = 5%."]},
+  {difficulty:"hard", text:"The difference between compound interest and simple interest on a sum for 2 years at 10% per annum is ₹100. Find the sum.", options:["₹8000","₹9000","₹10000","₹12000"], answer:2,
+   steps:["For 2 years, CI−SI = P×(R/100)².","100 = P×(10/100)² = P×0.01.","P = 100/0.01 = 10000."]}
+ ]},
+
+{id:"pnc", name:"Permutation and Combination", category:"quant",
+ concept:{
+  intro:"P&C counts arrangements and selections — order matters for permutations, doesn't for combinations.",
+  formulas:["nPr = n!/(n−r)! (order matters)","nCr = n!/(r!(n−r)!) (order doesn't matter)","Repeated items: n!/(p!q!...) for items repeated p, q, ... times","'At least one': Total selections − selections with none of the required type"],
+  example:{problem:"How many ways can the letters of 'LEADER' be arranged?",
+   steps:["6 letters total, 'E' repeats twice","Arrangements = 6!/2! = 720/2 = 360"]},
+  shortcuts:["Order matters → permutation; order doesn't matter → combination. Ask this first, every time.","For 'at least one' conditions, compute the complement and subtract — it's almost always faster.","Repeated-letter arrangements: divide the full factorial by the factorial of each repeat count."],
+  realWorld:"Password/PIN counting, tournament scheduling and committee-formation problems all reduce to P&C."},
+ questions:[
+  {difficulty:"easy", text:"In how many ways can the letters of the word 'LEADER' be arranged?", options:["360","720","120","240"], answer:0,
+   steps:["LEADER has 6 letters with 'E' repeated twice.","Arrangements = 6!/2! = 720/2 = 360."]},
+  {difficulty:"easy", text:"In how many ways can 5 people be seated in a row?", options:["100","110","120","125"], answer:2,
+   steps:["Arrangements of 5 distinct people = 5! = 120."]},
+  {difficulty:"hard", text:"From a group of 7 men and 3 women, a committee of 4 is formed with at least 1 woman. In how many ways?", options:["165","175","185","195"], answer:1,
+   steps:["Total ways to choose 4 from 10 = C(10,4) = 210.","Ways with no woman = C(7,4) = 35.","At least 1 woman = 210 − 35 = 175."]},
+  {difficulty:"medium", text:"How many 3-digit numbers can be formed using the digits 1–9 without repetition?", options:["448","504","560","392"], answer:1,
+   steps:["First digit: 9 choices, second: 8 choices, third: 7 choices.","Total = 9×8×7 = 504."]}
+ ]},
+
+{id:"probability", name:"Probability", category:"quant",
+ concept:{
+  intro:"Probability measures how likely an event is, on a 0-to-1 scale — the mathematical foundation of risk and prediction.",
+  formulas:["P(Event) = Favorable outcomes / Total outcomes","P(A or B) = P(A) + P(B) − P(A and B)","P(not A) = 1 − P(A)","Independent events: P(A and B) = P(A) × P(B)"],
+  example:{problem:"Two coins are tossed together. Find the probability of getting exactly one head.",
+   steps:["Sample space: {HH, HT, TH, TT} → 4 outcomes","Exactly one head: {HT, TH} → 2 outcomes","P = 2/4 = 1/2"]},
+  shortcuts:["List the full sample space for small cases (2 coins, 1 die) — faster and safer than formulas.","'At least one' → compute 1 − P(none) first.","For two-dice sum problems, memorize the count of pairs for each sum (7 is most likely, with 6 pairs)."],
+  realWorld:"Risk assessment, insurance premiums and A/B testing all rest on the same probability foundations."},
+ questions:[
+  {difficulty:"easy", text:"A die is thrown once. Find the probability of getting a number greater than 4.", options:["1/6","1/3","1/2","2/3"], answer:1,
+   steps:["Favorable outcomes: {5,6} → 2 outcomes.","P = 2/6 = 1/3."]},
+  {difficulty:"easy", text:"Two coins are tossed together. Find the probability of getting exactly one head.", options:["1/4","1/2","3/4","1"], answer:1,
+   steps:["Sample space: {HH,HT,TH,TT} → 4 outcomes.","Exactly one head: {HT,TH} → 2 outcomes.","P = 2/4 = 1/2."]},
+  {difficulty:"medium", text:"A bag contains 5 red and 4 blue balls. One ball is drawn at random. Find the probability that it is red.", options:["4/9","5/9","1/2","5/4"], answer:1,
+   steps:["Total balls = 5+4 = 9.","P(red) = 5/9."]},
+  {difficulty:"hard", text:"Two dice are thrown together. Find the probability that the sum of the numbers is 8.", options:["5/36","6/36","4/36","7/36"], answer:0,
+   steps:["Favorable pairs summing to 8: (2,6)(3,5)(4,4)(5,3)(6,2) → 5 outcomes.","Total outcomes = 36.","P = 5/36."]}
+ ]},
+
+{id:"blood-relations", name:"Blood Relations", category:"logical",
+ concept:{
+  intro:"Blood Relations tests your ability to track family trees through nested pronoun clues — no formulas, just careful diagramming.",
+  formulas:["Draw a family tree as you read each clue — never solve blood relations purely in your head.","'Mother's/Father's only son' (speaker male) usually refers to the speaker himself.","Use separate generation levels for siblings vs parent/grandparent clues."],
+  example:{problem:"'She is the daughter of my grandfather's only son.' How is she related to the man (assume he is that only son)?",
+   steps:["'My grandfather's only son' = the man's own father.","The daughter of the man's father = the man's sister.","Answer: Sister."]},
+  shortcuts:["Assign generation letters (G1, G2, G3) as you draw — this instantly reveals whether the answer is a sibling, parent or grandchild.","Watch for gender-revealing words ('son', 'daughter', 'his', 'her') — they lock in relationships the pronouns alone don't.","Redraw from scratch if a clue seems to conflict — a wrong early assumption cascades through the whole tree."],
+  realWorld:"The same relationship-graph reasoning appears in database entity-relationship design and social-network modeling."},
+ questions:[
+  {difficulty:"medium", text:"Pointing to a photograph, a man says, 'She is the daughter of my grandfather's only son.' How is the woman related to the man?", options:["Mother","Sister","Aunt","Cousin"], answer:1,
+   steps:["'My grandfather's only son' refers to the man's own father (assuming the man is that only son).","The woman is the daughter of the man's father — i.e., his sister."]},
+  {difficulty:"hard", text:"A is B's sister. C is B's mother. D is C's father. E is D's mother. How is A related to D?", options:["Granddaughter","Daughter","Niece","Sister"], answer:0,
+   steps:["C is the mother of both A and B (since A is B's sister).","D is C's father, making D the grandfather of A and B.","Therefore A is D's granddaughter."]},
+  {difficulty:"easy", text:"Introducing a man, a woman said, 'His wife is the only daughter of my father.' How is the woman related to the man?", options:["Sister","Mother","Wife","Daughter"], answer:2,
+   steps:["'The only daughter of my father' is the woman herself.","So 'his wife' = the woman speaking → she is his wife."]},
+  {difficulty:"hard", text:"P is Q's father. Q is R's sister. S is P's father. How is R related to S?", options:["Son","Grandchild","Nephew","Father"], answer:1,
+   steps:["P is the father of Q, and Q is R's sister, so P is also R's father.","S is P's father, making S the grandfather of both Q and R.","So R is S's grandchild."]}
+ ]},
+
+{id:"seating", name:"Seating Arrangement", category:"logical",
+ concept:{
+  intro:"Seating Arrangement is a constraint-satisfaction puzzle: place people in a row or circle so every given clue holds true.",
+  formulas:["Linear row: number positions 1..n left to right, place fixed clues (extremes, 'nth from left') first.","Circular table: 'second to the right' means clockwise; opposite seat = position + n/2 (even n).","Place the most specific/fixed clue first, then work outward to relative clues."],
+  example:{problem:"5 people sit in a row. P is at the extreme left, Q is third from the left, S is immediately right of Q. Where is S?",
+   steps:["P = position 1, Q = position 3.","'Immediately right of Q' = position 4.","So S = position 4."]},
+  shortcuts:["Fixed-position clues (extremes, 'Nth from an end') anchor the puzzle — always place those before relative clues.","In circular arrangements, fix a direction (clockwise) first and stay consistent throughout.","Cross-check every clue against your final arrangement before answering — one skipped clue is the most common error."],
+  realWorld:"The same constraint-satisfaction approach powers exam seating plans, sports-league scheduling and floor-plan design."},
+ questions:[
+  {difficulty:"medium", text:"Five students P,Q,R,S,T sit in a row facing the teacher. P sits at the extreme left. Q sits third from the left. S sits immediately right of Q. R sits immediately left of Q. Who sits at the extreme right?", options:["R","S","T","Q"], answer:2,
+   steps:["Positions 1–5 left to right.","P=1 (extreme left), Q=3, S=4 (immediate right of Q), R=2 (immediate left of Q).","Remaining position 5 goes to T → T sits at the extreme right."]},
+  {difficulty:"hard", text:"Six friends A,B,C,D,E,F sit around a circular table facing the centre. A sits opposite D. B sits second to the right of A. C sits immediately left of B. E sits opposite B. Who sits immediately right of D?", options:["C","E","F","B"], answer:2,
+   steps:["Place A at position 1; opposite in a 6-seat circle means +3, so D is at position 4.","B is second to the right (clockwise) of A → position 3.","C is immediately left (counter-clockwise) of B → position 2.","E is opposite B (3+3=6) → position 6. Remaining position 5 = F.","Immediately right (clockwise) of D(4) is position 5 → F."]},
+  {difficulty:"medium", text:"In a row of five facing north, N is second from the left end. O is immediately left of N. M is immediately right of N. P is at an extreme end. Who is third from the right?", options:["N","M","O","Q"], answer:0,
+   steps:["Positions 1–5: N=2, O=1 (immediate left of N), M=3 (immediate right of N).","Remaining positions 4,5 go to P and Q; P is at an extreme end → P=5, Q=4.","Order: O,N,M,Q,P. Third from the right = position 3 = N."]}
+ ]},
+
+{id:"coding-decoding", name:"Coding-Decoding", category:"logical",
+ concept:{
+  intro:"Coding-Decoding hides a simple letter-shift or substitution rule inside an example word, which you must reverse-engineer.",
+  formulas:["Letter-shift codes: find the shift (+n or −n) from one known letter pair, then apply it to every letter.","Number-coding: map each letter to its alphabetical position (A=1...Z=26) before decoding.","Substitution codes: build a lookup table from the given example before decoding the target word."],
+  example:{problem:"If CAT is coded as DBU, how is DOG coded?",
+   steps:["C→D, A→B, T→U: each letter shifts forward by 1.","Apply the same shift to D,O,G → E,P,H.","DOG → EPH."]},
+  shortcuts:["Find the shift using the SHORTEST word given — fewer letters, fewer chances of a mistake.","Watch for wrap-around at Z→A when the shift pushes past the alphabet's end.","If the shift isn't constant, check whether the word is simply reversed instead."],
+  realWorld:"This is literally a simplified Caesar cipher — the same logic underlies basic classical cryptography."},
+ questions:[
+  {difficulty:"easy", text:"If in a certain code CAT is written as DBU, how is DOG written in that code?", options:["EPH","EPI","FPH","EOH"], answer:0,
+   steps:["Each letter is shifted forward by 1: C→D, A→B, T→U.","Apply the same shift to DOG: D→E, O→P, G→H → EPH."]},
+  {difficulty:"medium", text:"If BOMBAY is coded as CPNCBZ, how is DELHI coded in the same pattern?", options:["EFMIJ","EFMHJ","DFMIJ","EGMIJ"], answer:0,
+   steps:["Each letter is shifted forward by 1 (B→C, O→P, M→N, B→C, A→B, Y→Z).","Apply to DELHI: D→E, E→F, L→M, H→I, I→J → EFMIJ."]},
+  {difficulty:"hard", text:"In a certain code, PAPER is written as OZODQ. How would PENCIL be written in the same code?", options:["ODMBHK","OCLBGJ","ODMBHJ","NDMBHK"], answer:0,
+   steps:["Each letter is shifted back by 1 (P→O, A→Z, P→O, E→D, R→Q).","Apply to PENCIL: P→O, E→D, N→M, C→B, I→H, L→K → ODMBHK."]}
+ ]},
+
+{id:"verbal", name:"Verbal Ability", category:"verbal",
+ concept:{
+  intro:"Verbal Ability checks vocabulary precision and grammatical correctness — the skills interview panels judge in HR rounds.",
+  formulas:["Synonym/Antonym: identify the word's connotation (positive/negative) before checking options — eliminates half the choices instantly.","Sentence correction: check subject-verb agreement, tense consistency and preposition usage in that order.","Fill-in-the-blank: read the WHOLE sentence for contrast signals ('despite','however','therefore') before choosing."],
+  example:{problem:"Choose the antonym of 'Benevolent'.",
+   steps:["'Benevolent' = kind, well-meaning (positive connotation).","We need a NEGATIVE-connotation option.","'Malevolent' (ill-willed) is the direct opposite."]},
+  shortcuts:["Break down unfamiliar words using roots/prefixes ('bene-' = good, 'mal-' = bad).","'Neither/Either...of' phrases always take a singular verb — a classic trap in error-spotting questions.","Contrast words ('despite','although','but') signal the blank must go AGAINST the sentence's first half."],
+  realWorld:"Precise word choice and grammatical accuracy are exactly what interview panels assess in HR rounds."},
+ questions:[
+  {difficulty:"easy", text:"Choose the correct synonym of 'Ephemeral'.", options:["Permanent","Transient","Eternal","Durable"], answer:1,
+   steps:["'Ephemeral' means lasting for a very short time.","'Transient' carries the same meaning — brief, temporary."]},
+  {difficulty:"easy", text:"Choose the correct antonym of 'Benevolent'.", options:["Kind","Generous","Malevolent","Charitable"], answer:2,
+   steps:["'Benevolent' means kind and well-meaning.","Its opposite is 'Malevolent' — having ill will."]},
+  {difficulty:"medium", text:"Fill in the blank: Despite the heavy rain, the match ___ on schedule.", options:["called off","went ahead","postponed","cancelled"], answer:1,
+   steps:["'Despite' signals a contrast — the rain did NOT stop the match.","'Went ahead' correctly conveys that the match proceeded as planned."]},
+  {difficulty:"medium", text:"Identify the grammatical error: 'Neither of the two boys have finished their homework.'", options:["'Neither' is wrong","'have' should be 'has'","'their' should be 'his'","No error"], answer:1,
+   steps:["'Neither of' takes a singular verb because 'neither' itself is singular.","Correct form: 'Neither of the two boys has finished his homework.'"]},
+  {difficulty:"easy", text:"Choose the correct one-word substitute: 'A person who can speak two languages.'", options:["Linguist","Bilingual","Interpreter","Translator"], answer:1,
+   steps:["A 'Bilingual' person is fluent in two languages.","'Linguist' studies language broadly; 'Interpreter/Translator' convert language for others — not the same meaning."]}
+ ]}
+];
+
+const COMING_SOON = ["Data Interpretation","Puzzles","Analytical Reasoning (Advanced)"];
+
+const BADGES = [
+ {id:"profile-set", name:"Getting Started", desc:"Created your personalized learner profile.", mono:"GS"},
+ {id:"first-quiz", name:"Quiz Rookie", desc:"Completed your first quiz.", mono:"01"},
+ {id:"sharpshooter", name:"Sharpshooter", desc:"Scored 90%+ accuracy in a quiz.", mono:"90"},
+ {id:"consistent", name:"Consistent Learner", desc:"Completed 3 or more quizzes.", mono:"3×"},
+ {id:"topic-master", name:"Topic Master", desc:"Reached 80%+ average accuracy in any one topic.", mono:"TM"},
+ {id:"speedster", name:"Speedster", desc:"Averaged under 20s/question at 70%+ accuracy.", mono:"SP"}
+];
+
+/* ---------- Prompt Engineering Library (documents the templates that drive every AI feature) ---------- */
+const PROMPT_LIBRARY = [
+ {id:"concept", stage:"1 · Concept Explanation", technique:"Role Prompting + Structured Output Template",
+  desc:"Generates the Learn-view concept card (intro, formulas, solved example, shortcuts, real-world use) for any topic.",
+  v1:`You are an aptitude tutor. Explain {{topic}} to a student.`,
+  v2:`SYSTEM (role prompting):
+You are a patient, exam-focused aptitude coach who has taught
+10,000+ students preparing for campus placements. You never
+skip steps and you always sanity-check your own arithmetic
+before answering.
+
+TASK (structured / template prompting):
+Explain the topic "{{topic}}" for a {{skill_level}} learner
+targeting {{target_exam}}. Return STRICT JSON matching this
+schema — no prose outside the JSON:
+
+{
+  "intro": string,               // 1-2 sentences, plain language
+  "formulas": string[],          // 2-4 core formulas
+  "example": { "problem": string, "steps": string[] },
+  "shortcuts": string[],         // 2-3 exam-speed tricks
+  "real_world": string           // 1 sentence application
+}
+
+CONSTRAINTS:
+- Every formula must be independently verifiable by substitution.
+- The worked example's final step must restate the numeric answer.
+- Do not introduce a topic outside {{topic}}.`,
+  why:"v1 produced inconsistent structure (sometimes prose, sometimes bullets) and occasionally drifted into unrelated topics. v2 fixes both by (a) role-anchoring the tutor persona so tone stays exam-focused, and (b) forcing a JSON schema so the UI can render it deterministically — this is exactly the pattern used to populate every topic card in the Learn view."},
+
+ {id:"question", stage:"2 · Question Generation", technique:"Few-Shot Prompting + Prompt Chaining",
+  desc:"Generates fresh MCQ practice/quiz questions at a target difficulty, chained after concept generation so questions stay grounded in the same formulas.",
+  v1:`Write 5 practice questions about {{topic}}.`,
+  v2:`SYSTEM: You are an aptitude question setter for campus
+placement exams. You only use the formulas below — do not
+invent new ones.
+
+GROUNDING (chained from Stage 1 output):
+Approved formulas for {{topic}}:
+{{formulas_from_stage_1}}
+
+FEW-SHOT EXAMPLES (format to imitate exactly):
+Q: A can finish a job in 12 days and B in 18 days. Working
+   together, how many days will they take?
+Options: ["6 days","7.2 days","8 days","9 days"]
+Answer: 7.2 days
+Steps: ["A's 1-day work = 1/12, B's = 1/18.",
+        "Together = 5/36.", "Time = 36/5 = 7.2 days."]
+
+Q: 15 men can complete a work in 20 days. How many men are
+   needed to finish it in 12 days?
+Options: ["20","22","25","30"]
+Answer: 25
+Steps: ["Total man-days = 15×20 = 300.",
+        "Men needed = 300/12 = 25."]
+
+TASK:
+Generate {{count}} NEW questions on {{topic}} at difficulty
+"{{difficulty}}", following the exact Q/Options/Answer/Steps
+format above. Each "Steps" array must let a student re-derive
+the answer by hand. Return as JSON array.`,
+  why:"v1 gave numerically inconsistent or occasionally wrong-answer questions with no worked solution. v2 chains the verified formula list from Stage 1 into the prompt (so the model can't invent an ungrounded formula) and few-shot anchors the exact output shape and step-by-step rigor — this is the template actually used to seed each topic's question bank in this prototype."},
+
+ {id:"feedback", stage:"3 · Answer Feedback", technique:"Structured Prompting + Role Prompting",
+  desc:"Generates the explanation shown immediately after a learner submits an answer, whether correct or incorrect.",
+  v1:`The student answered {{selected}}. The correct answer is
+{{correct}}. Explain why.`,
+  v2:`SYSTEM: You are giving instant feedback to a student mid-quiz.
+Be encouraging but precise — never vague ("you made an error")
+without naming the exact step.
+
+INPUT:
+Question: {{question_text}}
+Student selected: {{selected_option}}
+Correct answer: {{correct_option}}
+Reference steps: {{solution_steps}}
+
+TASK: Return JSON:
+{
+  "verdict": "correct" | "incorrect",
+  "message": string,       // 1 sentence, names the specific
+                            // misconception if incorrect
+  "steps": string[]        // the verified solution steps,
+                            // unchanged from input
+}
+Never alter the reference steps — only compose the "message".`,
+  why:"v1 let the model re-derive the solution from scratch on every answer, occasionally introducing a NEW arithmetic error different from the one already verified in the question bank. v2 passes the pre-verified steps through unchanged and restricts generation to just the one-line coaching message — reducing hallucination surface area to a single sentence."},
+
+ {id:"roadmap", stage:"4 · Roadmap Generation", technique:"Prompt Chaining (multi-stage)",
+  desc:"Builds the week-by-week roadmap on the Dashboard from the learner's profile — chains three stages so each stage's output constrains the next.",
+  v1:`Make a study plan for {{profile}}.`,
+  v2:`STAGE A — Topic selection (structured):
+Given profile { target: {{target}}, level: {{level}},
+focus_topics: {{topics}} }, output a JSON-ordered list of
+topics prioritized for {{target}}, inserting a foundational
+topic first if level = "beginner".
+
+STAGE B — Pacing (template, chained on Stage A's list):
+Given prep_time = {{prep_time}} and the Stage A topic list,
+divide the list into N weekly blocks (N derived from
+prep_time), 1-2 topics per week, and attach one milestone
+sentence per week using the template:
+"Week {{n}}: Master {{topic}} — learn core concepts, solve
+10+ practice questions, take a topic quiz (target {{acc}}%
+accuracy)."
+
+STAGE C — Adaptive insert (chained on live performance data):
+If any completed week's quiz accuracy < 60%, insert a
+"Revision — {{topic}}" week immediately after it before
+continuing the plan.`,
+  why:"A single-shot prompt produced plausible-sounding but generic plans that ignored prep-time constraints and never revisited weak topics. Chaining into three stages — select, pace, then adapt — lets each stage be independently validated (Stage A's topic list is checked against the syllabus; Stage B's week count is checked against prep_time) before the next stage consumes it. This is the exact chain implemented in generateRoadmap() below."},
+
+ {id:"revision", stage:"5 · Revision Recommendation", technique:"Iterative Prompt Refinement",
+  desc:"Recommends which topics to revise, refined across three iterations after reviewing real output quality.",
+  v1:`Which topics is the student weak in?`,
+  v2:`Given topic_accuracy = {{topic_accuracy_map}}, list topics
+below 65% accuracy, sorted ascending.`,
+  v3:`SYSTEM: You are a data-driven revision planner.
+INPUT: topic_accuracy_map (topic → {accuracy, attempts, last_seen})
+RULES:
+- Only surface a topic if attempts >= 2 (avoid judging on 1 data point).
+- Sort by accuracy ascending, then by recency (oldest last_seen first).
+- For each flagged topic, generate ONE sentence in the form:
+  "Revise {{topic}} — {{accuracy}}% accuracy across
+  {{attempts}} attempts; focus on {{weakest_subskill}}."
+- If no topic has >=2 attempts, return an empty list (never
+  fabricate a weakness from insufficient data).`,
+  why:"v1 was too open-ended to be reusable. v2 added a numeric threshold but would flag a topic after a single unlucky attempt. v3 — reached after reviewing v2's output against real quiz logs — adds a minimum-attempts guard so the recommendation is never drawn from a sample size of one, directly addressing a reliability gap found during testing."}
+];
+
+/* ---------- State ---------- */
+const STORE_KEY = "aptigenie_state_v1";
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return {profile:null, progress:{}, quizHistory:[], badges:[], practiceStreak:{}};
+}
+function saveState(){ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+let state = loadState();
+
+function ensureTopicProgress(topicId){
+  if(!state.progress[topicId]) state.progress[topicId] = {attempts:0, correct:0, conceptViewed:false};
+  return state.progress[topicId];
+}
+
+/* ---------- Theme ---------- */
+function applyTheme(choice){
+  if(choice === "light") document.documentElement.setAttribute("data-theme","light");
+  else if(choice === "dark") document.documentElement.setAttribute("data-theme","dark");
+  else document.documentElement.removeAttribute("data-theme");
+  document.querySelectorAll(".theme-btn").forEach(b=>b.classList.toggle("active", b.dataset.themeChoice===choice));
+  localStorage.setItem("aptigenie_theme", choice);
+}
+document.querySelectorAll(".theme-btn").forEach(b=>b.addEventListener("click",()=>applyTheme(b.dataset.themeChoice)));
+applyTheme(localStorage.getItem("aptigenie_theme") || "system");
+</script>
+<script>
+"use strict";
+function escapeHtml(s){ return String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+function statTile(label,val,sub){ return `<div class="stat-tile"><div class="stat-tile__label">${label}</div><div class="stat-tile__value">${val}</div><div class="stat-tile__sub">${sub}</div></div>`; }
+function badgeHtml(b,earned){ return `<div class="badge-item ${earned?"earned":"locked"}"><div class="badge-mono">${b.mono}</div><div><div class="badge-item__name">${b.name}</div><div class="badge-item__desc">${b.desc}</div></div></div>`; }
+function fmtTime(sec){ const m=Math.floor(sec/60), s=sec%60; return `${m}m ${s}s`; }
+function accBand(acc){ if(acc>=75) return {color:"var(--good)", label:"Strong"}; if(acc>=50) return {color:"var(--warning)", label:"Moderate"}; return {color:"var(--critical)", label:"Needs work"}; }
+function erf(x){
+  const sign = x<0?-1:1; x=Math.abs(x);
+  const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+  const t=1/(1+p*x);
+  const y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);
+  return sign*y;
+}
+function normalCDF(z){ return 0.5*(1+erf(z/Math.SQRT2)); }
+function estimatePercentile(accuracy){ const z=(accuracy-62)/16; return Math.min(99, Math.max(1, Math.round(normalCDF(z)*100))); }
+
+function ensureTopicProgress(topicId){
+  if(!state.progress[topicId]) state.progress[topicId] = {attempts:0, correct:0, conceptViewed:false};
+  return state.progress[topicId];
+}
+
+/* ---------- Router ---------- */
+const VIEWS = ["onboarding","dashboard","learn","practice","quiz","reports","prompts"];
+let currentView = "onboarding";
+function showView(name){
+  if(!state.profile && !["onboarding","prompts"].includes(name)) name = "onboarding";
+  VIEWS.forEach(v=>document.getElementById("view-"+v).classList.toggle("hidden", v!==name));
+  document.querySelectorAll(".navbtn[data-view]").forEach(b=>b.classList.toggle("active", b.dataset.view===name));
+  currentView = name;
+  if(name==="dashboard") renderDashboard();
+  if(name==="learn") renderLearn();
+  if(name==="practice") renderPractice();
+  if(name==="quiz") renderQuizSetup();
+  if(name==="reports") renderReports();
+  if(name==="prompts") renderPromptStudio();
+  window.scrollTo(0,0);
+}
+function unlockNav(){
+  document.querySelectorAll(".navbtn[data-view]").forEach(b=>{
+    if(["dashboard","learn","practice","quiz","reports"].includes(b.dataset.view)) b.disabled=false;
+  });
+}
+
+/* ---------- Onboarding ---------- */
+function renderTopicChips(){
+  const box=document.getElementById("pfTopics");
+  box.innerHTML = TOPICS.map(t=>`<button type="button" class="chip" data-topic="${t.id}">${t.name}</button>`).join("");
+  box.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>c.classList.toggle("selected")));
+}
+function prefillOnboarding(){
+  if(!state.profile) return;
+  const p=state.profile;
+  document.getElementById("pfName").value=p.name;
+  document.getElementById("pfEdu").value=p.edu;
+  document.getElementById("pfTarget").value=p.target;
+  document.getElementById("pfTime").value=p.prepTime;
+  document.getElementById("pfGoals").value=p.goals||"";
+  document.querySelectorAll("#pfLevel .radio-pill").forEach(x=>x.classList.toggle("selected", x.dataset.val===p.level));
+  document.querySelectorAll("#pfTopics .chip").forEach(c=>c.classList.toggle("selected", p.topics.includes(c.dataset.topic)));
+}
+function submitProfile(){
+  const name = document.getElementById("pfName").value.trim() || "Learner";
+  const edu = document.getElementById("pfEdu").value;
+  const target = document.getElementById("pfTarget").value.trim() || "Campus Placements";
+  const levelBtn = document.querySelector("#pfLevel .radio-pill.selected");
+  const level = levelBtn ? levelBtn.dataset.val : "intermediate";
+  const prepTime = document.getElementById("pfTime").value;
+  const goals = document.getElementById("pfGoals").value.trim();
+  const topics = Array.from(document.querySelectorAll("#pfTopics .chip.selected")).map(c=>c.dataset.topic);
+  state.profile = {name, edu, target, level, prepTime, goals, topics, createdAt: Date.now()};
+  state.roadmap = generateRoadmap(state.profile);
+  if(!state.badges.includes("profile-set")) state.badges.push("profile-set");
+  saveState();
+  unlockNav();
+  renderSidebarProfile();
+  showView("dashboard");
+}
+function renderSidebarProfile(){
+  const card=document.getElementById("sidebarProfileCard");
+  if(!state.profile){ card.hidden=true; return; }
+  card.hidden=false;
+  document.getElementById("sbName").textContent = state.profile.name;
+  document.getElementById("sbMeta").textContent = `${state.profile.target} · ${state.profile.level}`;
+}
+
+/* ---------- Roadmap generation (rule-based simulation of the chained prompt in Prompt Studio) ---------- */
+function generateRoadmap(profile){
+  let topicIds = (profile.topics && profile.topics.length) ? profile.topics.slice() : TOPICS.map(t=>t.id);
+  topicIds = TOPICS.filter(t=>topicIds.includes(t.id)).map(t=>t.id);
+  if(profile.level==="beginner"){
+    const foundation=["number-system","percentage"];
+    topicIds = foundation.filter(id=>topicIds.includes(id)).concat(topicIds.filter(id=>!foundation.includes(id)));
+  }
+  const weeksTotal = profile.prepTime==="2w" ? 2 : profile.prepTime==="3m" ? 10 : 4;
+  const perWeek = Math.max(1, Math.ceil(topicIds.length/weeksTotal));
+  const targetAcc = profile.level==="advanced" ? 85 : profile.level==="beginner" ? 65 : 75;
+  let weeks=[];
+  for(let i=0;i<topicIds.length;i+=perWeek){
+    const chunk = topicIds.slice(i,i+perWeek);
+    const names = chunk.map(id=>TOPICS.find(t=>t.id===id).name).join(" & ");
+    weeks.push({topics:chunk, title:names, milestone:`Master ${names} — learn core concepts, solve 10+ practice questions, take a topic quiz (target ${targetAcc}% accuracy).`});
+  }
+  if(profile.level==="advanced"){
+    const withMocks=[];
+    weeks.forEach((w,i)=>{ withMocks.push(w); if((i+1)%2===0) withMocks.push({topics:[], title:"Full Mock Test", milestone:"Take a full-length mock test across all topics and review every miss."}); });
+    weeks = withMocks;
+  }
+  return {weeks, targetAcc};
+}
+function weekDone(w){ if(!w.topics || !w.topics.length) return false; return w.topics.every(id=>{const p=state.progress[id]; return p && p.attempts>0;}); }
+
+/* ---------- Badges ---------- */
+function refreshBadges(){
+  const b = new Set(state.badges);
+  if(state.profile) b.add("profile-set");
+  if(state.quizHistory.length>=1) b.add("first-quiz");
+  if(state.quizHistory.some(q=>q.accuracy>=90)) b.add("sharpshooter");
+  if(state.quizHistory.length>=3) b.add("consistent");
+  if(Object.values(state.progress).some(p=>p.attempts>=5 && (p.correct/p.attempts)>=0.8)) b.add("topic-master");
+  if(state.quizHistory.some(q=>q.avgTime<20 && q.accuracy>=70)) b.add("speedster");
+  state.badges = Array.from(b);
+  saveState();
+}
+
+/* ---------- Weak-area recommendations (iterative-refinement rule: needs >=2 attempts) ---------- */
+function renderWeakAreas(){
+  const rows = Object.keys(state.progress).map(id=>{
+    const p=state.progress[id]; const t=TOPICS.find(x=>x.id===id);
+    return {name:t?t.name:id, attempts:p.attempts, acc: p.attempts? Math.round(p.correct/p.attempts*100):0};
+  }).filter(r=>r.attempts>=2 && r.acc<65).sort((a,b)=>a.acc-b.acc);
+  if(!rows.length) return `<p class="help">No weak areas flagged yet — recommendations need at least 2 attempts on a topic before AptiGenie surfaces it (this avoids judging you on a single unlucky question).</p>`;
+  return rows.map(r=>`<div style="margin-bottom:10px;"><strong style="font-size:.85rem;">Revise ${escapeHtml(r.name)}</strong><div class="help">${r.acc}% accuracy across ${r.attempts} attempts — schedule a focused revision session.</div></div>`).join("");
+}
+
+/* ---------- Dashboard ---------- */
+function renderDashboard(){
+  refreshBadges();
+  document.getElementById("dashGreeting").textContent = `Welcome back, ${state.profile.name.split(" ")[0]}`;
+  const totalQuizzes = state.quizHistory.length;
+  const overallAcc = totalQuizzes ? Math.round(state.quizHistory.reduce((s,q)=>s+q.accuracy,0)/totalQuizzes) : 0;
+  const topicsStarted = Object.keys(state.progress).filter(id=>state.progress[id].attempts>0).length;
+  document.getElementById("dashStats").innerHTML =
+    statTile("Quizzes Taken", totalQuizzes, "attempts logged") +
+    statTile("Overall Accuracy", overallAcc+"%", totalQuizzes ? "across all quizzes" : "take a quiz to begin") +
+    statTile("Topics Practiced", topicsStarted+" / "+TOPICS.length, "syllabus coverage") +
+    statTile("Badges Earned", state.badges.length+" / "+BADGES.length, "achievements");
+  const rm = state.roadmap || generateRoadmap(state.profile);
+  document.getElementById("roadmapBox").innerHTML = rm.weeks.map((w,i)=>{
+    const doneClass = weekDone(w) ? "done" : "";
+    const label = (w.topics && w.topics.length) ? "Wk "+(i+1) : "★";
+    return `<div class="week ${doneClass}">
+      <div class="week__num">${label}</div>
+      <div class="week__body">
+        <div class="week__title">${escapeHtml(w.title || "Week "+(i+1))}</div>
+        <div class="week__milestone">${escapeHtml(w.milestone||"")}</div>
+        <div class="week__tags">${(w.topics||[]).map(id=>{const t=TOPICS.find(x=>x.id===id); return t?`<span class="tag tag--${t.category}">${t.name}</span>`:"";}).join("")}</div>
+      </div>
+    </div>`;
+  }).join("");
+  document.getElementById("weakAreaBox").innerHTML = renderWeakAreas();
+  document.getElementById("badgeBoxSmall").innerHTML = BADGES.slice(0,6).map(b=>badgeHtml(b, state.badges.includes(b.id))).join("");
+}
+
+/* ---------- Learn ---------- */
+let currentLearnTopic = null;
+function renderLearn(){
+  if(!currentLearnTopic) currentLearnTopic = TOPICS[0].id;
+  const list=document.getElementById("learnTopicList");
+  list.innerHTML = TOPICS.map(t=>{
+    const p=state.progress[t.id];
+    const pct = (p && p.attempts) ? Math.round(p.correct/p.attempts*100)+"%" : "—";
+    return `<button type="button" class="topicitem ${currentLearnTopic===t.id?"active":""}" data-id="${t.id}">
+      <span class="topicitem__dot" style="background:var(--cat-${t.category})"></span>
+      <span class="topicitem__name">${t.name}</span>
+      <span class="topicitem__pct">${pct}</span>
+    </button>`;
+  }).join("") + COMING_SOON.map(n=>`<div class="topicitem locked"><span class="topicitem__dot" style="background:var(--muted)"></span><span class="topicitem__name">${n}</span><span class="topicitem__pct">soon</span></div>`).join("");
+  list.querySelectorAll(".topicitem[data-id]").forEach(b=>b.addEventListener("click",()=>{ currentLearnTopic=b.dataset.id; renderLearn(); }));
+  const t = TOPICS.find(x=>x.id===currentLearnTopic);
+  ensureTopicProgress(t.id).conceptViewed = true; saveState();
+  const detail=document.getElementById("learnDetail");
+  detail.innerHTML = `
+    <div class="tag tag--${t.category}">${CAT_LABEL[t.category]}</div>
+    <h2 style="margin-top:8px;">${t.name}</h2>
+    <p>${escapeHtml(t.concept.intro)}</p>
+    <h4>Key formulas</h4>
+    <ul class="formula-list">${t.concept.formulas.map(f=>`<li>${escapeHtml(f)}</li>`).join("")}</ul>
+    <h4>Solved example</h4>
+    <div class="example-box">
+      <p style="color:var(--ink); font-weight:600; margin-bottom:8px;">${escapeHtml(t.concept.example.problem)}</p>
+      <ol class="steps">${t.concept.example.steps.map(s=>`<li>${escapeHtml(s)}</li>`).join("")}</ol>
+    </div>
+    <h4>Shortcuts &amp; tricks</h4>
+    <ul class="shortcuts">${t.concept.shortcuts.map(s=>`<li>${escapeHtml(s)}</li>`).join("")}</ul>
+    <h4>Where this shows up</h4>
+    <p class="realworld">${escapeHtml(t.concept.realWorld)}</p>
+    <button class="btn btn--primary" id="learnToPractice">Practice ${escapeHtml(t.name)} questions →</button>
+  `;
+  document.getElementById("learnToPractice").addEventListener("click",()=>{ currentPracticeTopic=t.id; showView("practice"); });
+}
+
+/* ---------- Practice ---------- */
+let currentPracticeTopic = null;
+let practiceDifficultyLevel = "easy";
+let practiceStreak = 0;
+let practiceAnswered = false;
+let activePracticeQ = null;
+function renderPracticeTopicList(){
+  const list=document.getElementById("practiceTopicList");
+  list.innerHTML = TOPICS.map(t=>{
+    const p=state.progress[t.id]; const pct=(p&&p.attempts)?Math.round(p.correct/p.attempts*100)+"%":"—";
+    return `<button type="button" class="topicitem ${currentPracticeTopic===t.id?"active":""}" data-id="${t.id}">
+      <span class="topicitem__dot" style="background:var(--cat-${t.category})"></span>
+      <span class="topicitem__name">${t.name}</span><span class="topicitem__pct">${pct}</span></button>`;
+  }).join("");
+  list.querySelectorAll(".topicitem").forEach(b=>b.addEventListener("click",()=>{
+    currentPracticeTopic=b.dataset.id; practiceDifficultyLevel="easy"; practiceStreak=0; startPracticeQuestion();
+  }));
+}
+function renderPractice(){
+  renderPracticeTopicList();
+  if(currentPracticeTopic) startPracticeQuestion();
+}
+function pickQuestion(topic, difficulty){
+  const pool = topic.questions.filter(q=>q.difficulty===difficulty);
+  const use = pool.length ? pool : topic.questions;
+  return use[Math.floor(Math.random()*use.length)];
+}
+function startPracticeQuestion(){
+  renderPracticeTopicList();
+  const t=TOPICS.find(x=>x.id===currentPracticeTopic);
+  activePracticeQ = pickQuestion(t, practiceDifficultyLevel);
+  practiceAnswered=false;
+  renderPracticeQuestion(t);
+}
+function renderPracticeQuestion(t){
+  const main=document.getElementById("practiceMain");
+  const q=activePracticeQ;
+  main.innerHTML = `
+   <div class="card" style="margin-bottom:12px;">
+     <div style="display:flex; justify-content:space-between; align-items:center;">
+       <div class="tag tag--${t.category}">${t.name}</div>
+       <div class="help">Adaptive difficulty: <strong style="color:var(--ink)">${practiceDifficultyLevel}</strong> · streak ${practiceStreak}</div>
+     </div>
+   </div>
+   <div class="qcard">
+     <div class="qcard__meta"><span class="diff diff--${q.difficulty}">${q.difficulty}</span></div>
+     <div class="qcard__text">${escapeHtml(q.text)}</div>
+     <div class="options" id="practiceOptions">
+       ${q.options.map((op,i)=>`<button type="button" class="option" data-i="${i}"><span class="option__letter">${String.fromCharCode(65+i)}</span><span>${escapeHtml(op)}</span></button>`).join("")}
+     </div>
+     <div id="practiceSolutionArea"></div>
+   </div>
+   <div style="margin-top:12px; display:flex; gap:8px;">
+     <button class="btn btn--primary" id="practiceNextBtn" disabled>Next question →</button>
+   </div>
+  `;
+  main.querySelectorAll("#practiceOptions .option").forEach(btn=>btn.addEventListener("click",()=>answerPractice(t, parseInt(btn.dataset.i,10))));
+  document.getElementById("practiceNextBtn").addEventListener("click",()=>startPracticeQuestion());
+}
+function answerPractice(t, idx){
+  if(practiceAnswered) return;
+  practiceAnswered=true;
+  const q=activePracticeQ;
+  const correct = idx===q.answer;
+  const p = ensureTopicProgress(t.id); p.attempts++; if(correct) p.correct++;
+  saveState();
+  if(correct){ practiceStreak++; if(practiceStreak>=2){ practiceDifficultyLevel = practiceDifficultyLevel==="easy"?"medium":"hard"; practiceStreak=0; } }
+  else { practiceStreak=0; practiceDifficultyLevel = practiceDifficultyLevel==="hard"?"medium":"easy"; }
+  document.querySelectorAll("#practiceOptions .option").forEach((btn,i)=>{
+    btn.disabled=true;
+    if(i===q.answer) btn.classList.add("correct");
+    else if(i===idx) btn.classList.add("incorrect");
+  });
+  document.getElementById("practiceSolutionArea").innerHTML = `
+    <div class="solution-box">
+      <div class="feedback-banner ${correct?"ok":"bad"}">${correct?"Correct!":"Not quite."}</div>
+      <div class="solution-box__label">Step-by-step solution</div>
+      <ol class="steps">${q.steps.map(s=>`<li>${escapeHtml(s)}</li>`).join("")}</ol>
+    </div>`;
+  document.getElementById("practiceNextBtn").disabled=false;
+}
+
+/* ---------- Quiz ---------- */
+let quizMode = "topic";
+let quizState = null;
+function renderQuizSetup(){
+  document.getElementById("quizSetup").classList.remove("hidden");
+  document.getElementById("quizRunner").classList.add("hidden");
+  document.getElementById("quizResult").classList.add("hidden");
+  renderQuizModeOptions();
+}
+function renderQuizModeOptions(){
+  const box=document.getElementById("quizModeOptions");
+  if(quizMode==="topic"){
+    box.innerHTML = `<div class="field"><label>Topic</label><select id="quizTopicPick">${TOPICS.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")}</select></div>`;
+  } else if(quizMode==="section"){
+    box.innerHTML = `<div class="field"><label>Category</label><select id="quizCatPick"><option value="quant">Quantitative</option><option value="logical">Logical Reasoning</option><option value="verbal">Verbal Ability</option></select></div>`;
+  } else {
+    box.innerHTML = `<p class="help">Pulls 2 questions from every topic across the full syllabus, timed at 20 minutes — mirrors a real placement aptitude round.</p>`;
+  }
+}
+function buildQuizQuestions(){
+  let qs=[];
+  if(quizMode==="topic"){
+    const id = document.getElementById("quizTopicPick").value;
+    const t=TOPICS.find(x=>x.id===id);
+    qs = shuffle(t.questions.slice()).slice(0,5).map(q=>({...q, topicId:t.id, topicName:t.name}));
+  } else if(quizMode==="section"){
+    const cat = document.getElementById("quizCatPick").value;
+    const pool=[];
+    TOPICS.filter(t=>t.category===cat).forEach(t=>t.questions.forEach(q=>pool.push({...q, topicId:t.id, topicName:t.name})));
+    qs = shuffle(pool).slice(0,10);
+  } else {
+    TOPICS.forEach(t=>{ shuffle(t.questions.slice()).slice(0,2).forEach(q=>qs.push({...q, topicId:t.id, topicName:t.name})); });
+    qs = shuffle(qs);
+  }
+  return qs;
+}
+function startQuiz(){
+  const qs = buildQuizQuestions();
+  const durationSec = quizMode==="topic" ? 300 : quizMode==="section" ? 600 : 1200;
+  quizState = {questions:qs, index:0, answers:new Array(qs.length).fill(null), durationSec, remaining:durationSec};
+  document.getElementById("quizSetup").classList.add("hidden");
+  document.getElementById("quizResult").classList.add("hidden");
+  document.getElementById("quizRunner").classList.remove("hidden");
+  renderQuizQuestion();
+  quizState.timerHandle = setInterval(tickQuizTimer, 1000);
+}
+function tickQuizTimer(){
+  quizState.remaining--;
+  updateTimerUI();
+  if(quizState.remaining<=0){ clearInterval(quizState.timerHandle); finishQuiz(); }
+}
+function updateTimerUI(){
+  const el=document.getElementById("quizTimer"); if(!el) return;
+  const rem=Math.max(0,quizState.remaining);
+  const m=Math.floor(rem/60), s=rem%60;
+  el.textContent = `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  el.parentElement.classList.toggle("low", rem<=30);
+}
+function renderQuizQuestion(){
+  const {questions, index}=quizState;
+  const q=questions[index];
+  const box=document.getElementById("quizRunner");
+  box.innerHTML = `
+   <div class="card" style="margin-bottom:12px;">
+     <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+       <div>
+         <div class="help">Question ${index+1} of ${questions.length}</div>
+         <div class="progressbar" style="width:220px; margin-top:6px;"><div class="progressbar__fill" style="width:${(index/questions.length*100)}%"></div></div>
+       </div>
+       <div class="timer"><span class="num" id="quizTimer">00:00</span></div>
+     </div>
+   </div>
+   <div class="qcard">
+     <div class="qcard__meta"><span class="tag tag--${TOPICS.find(t=>t.id===q.topicId).category}">${q.topicName}</span><span class="diff diff--${q.difficulty}">${q.difficulty}</span></div>
+     <div class="qcard__text">${escapeHtml(q.text)}</div>
+     <div class="options" id="quizOptions">
+       ${q.options.map((op,i)=>`<button type="button" class="option ${quizState.answers[index]===i?"selected":""}" data-i="${i}"><span class="option__letter">${String.fromCharCode(65+i)}</span><span>${escapeHtml(op)}</span></button>`).join("")}
+     </div>
+   </div>
+   <div style="margin-top:14px; display:flex; justify-content:space-between;">
+     <button class="btn" id="quizPrevBtn" ${index===0?"disabled":""}>← Previous</button>
+     <button class="btn btn--primary" id="quizNextBtn">${index===questions.length-1?"Submit test":"Next →"}</button>
+   </div>
+  `;
+  updateTimerUI();
+  box.querySelectorAll("#quizOptions .option").forEach(btn=>btn.addEventListener("click",()=>{
+    quizState.answers[index]=parseInt(btn.dataset.i,10);
+    box.querySelectorAll("#quizOptions .option").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+  }));
+  document.getElementById("quizPrevBtn").addEventListener("click",()=>{ quizState.index--; renderQuizQuestion(); });
+  document.getElementById("quizNextBtn").addEventListener("click",()=>{
+    if(index<questions.length-1){ quizState.index++; renderQuizQuestion(); } else { clearInterval(quizState.timerHandle); finishQuiz(); }
+  });
+}
+function finishQuiz(){
+  const {questions, answers, durationSec, remaining} = quizState;
+  const timeTakenSec = durationSec - Math.max(0,remaining);
+  let correct=0;
+  const perTopic={};
+  questions.forEach((q,i)=>{
+    const ok = answers[i]===q.answer; if(ok) correct++;
+    const p=ensureTopicProgress(q.topicId); p.attempts++; if(ok) p.correct++;
+    perTopic[q.topicId] = perTopic[q.topicId] || {name:q.topicName, total:0, correct:0};
+    perTopic[q.topicId].total++; if(ok) perTopic[q.topicId].correct++;
+  });
+  const accuracy = Math.round(correct/questions.length*100);
+  const avgTime = Math.round(timeTakenSec/questions.length);
+  const percentile = estimatePercentile(accuracy);
+  const record = {date:Date.now(), mode:quizMode, total:questions.length, correct, accuracy, timeTakenSec, avgTime, percentile, perTopic};
+  state.quizHistory.push(record);
+  saveState();
+  refreshBadges();
+  document.getElementById("quizRunner").classList.add("hidden");
+  document.getElementById("quizSetup").classList.remove("hidden");
+  renderQuizResult(record, questions, answers);
+}
+function renderQuizResult(record, questions, answers){
+  const box=document.getElementById("quizResult");
+  box.classList.remove("hidden");
+  box.innerHTML = `
+   <div class="grid grid-4" style="margin-bottom:16px;">
+     ${statTile("Score", record.correct+"/"+record.total, record.accuracy+"% accuracy")}
+     ${statTile("Time Taken", fmtTime(record.timeTakenSec), record.avgTime+"s / question avg")}
+     ${statTile("Estimated Percentile", "P"+record.percentile, "vs a simulated peer cohort")}
+     ${statTile("Badges", state.badges.length+" / "+BADGES.length, "keep going")}
+   </div>
+   <div class="card">
+     <h3>Review your answers</h3>
+     ${questions.map((q,i)=>{
+       const chosen=answers[i];
+       return `<div class="qcard" style="margin-bottom:12px;">
+         <div class="qcard__meta"><span class="tag tag--${TOPICS.find(t=>t.id===q.topicId).category}">${q.topicName}</span><span class="diff diff--${q.difficulty}">${q.difficulty}</span></div>
+         <div class="qcard__text">${escapeHtml(q.text)}</div>
+         <div class="options">
+           ${q.options.map((op,oi)=>{
+             let cls="option"; if(oi===q.answer) cls+=" correct"; else if(oi===chosen) cls+=" incorrect";
+             return `<div class="${cls}"><span class="option__letter">${String.fromCharCode(65+oi)}</span><span>${escapeHtml(op)}</span></div>`;
+           }).join("")}
+         </div>
+         <div class="solution-box"><div class="solution-box__label">Solution</div><ol class="steps">${q.steps.map(s=>`<li>${escapeHtml(s)}</li>`).join("")}</ol></div>
+       </div>`;
+     }).join("")}
+   </div>
+   <button class="btn btn--primary" id="quizRetakeBtn" style="margin-top:12px;">Take another quiz</button>
+  `;
+  document.getElementById("quizRetakeBtn").addEventListener("click",()=>{ box.classList.add("hidden"); });
+}
+
+/* ---------- Reports ---------- */
+function renderReports(){
+  refreshBadges();
+  const box=document.getElementById("reportsBody");
+  const totalQuizzes=state.quizHistory.length;
+  const overallAcc = totalQuizzes ? Math.round(state.quizHistory.reduce((s,q)=>s+q.accuracy,0)/totalQuizzes) : 0;
+  const avgPercentile = totalQuizzes ? Math.round(state.quizHistory.reduce((s,q)=>s+q.percentile,0)/totalQuizzes) : 0;
+  const topicRows = TOPICS.map(t=>{ const p=state.progress[t.id]; return {name:t.name, acc:(p&&p.attempts)?Math.round(p.correct/p.attempts*100):null, attempts:p?p.attempts:0}; });
+  box.innerHTML = `
+    <div class="grid grid-4" style="margin-bottom:16px;">
+      ${statTile("Quizzes Taken", totalQuizzes, "total attempts")}
+      ${statTile("Overall Accuracy", overallAcc+"%", "across all quizzes")}
+      ${statTile("Avg. Percentile", totalQuizzes?"P"+avgPercentile:"—", "simulated cohort estimate")}
+      ${statTile("Badges", state.badges.length+"/"+BADGES.length, "achievements unlocked")}
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>Topic-wise accuracy</h3>
+        ${topicRows.some(r=>r.attempts>0) ? renderBarChart(topicRows) : `<div class="emptystate"><p>Practice a few topics to see this chart fill in.</p></div>`}
+      </div>
+      <div class="card">
+        <h3>Score trend</h3>
+        ${totalQuizzes ? renderSparkline() : `<div class="emptystate"><p>Take a quiz to start tracking your trend.</p></div>`}
+      </div>
+    </div>
+    <div class="card">
+      <h3>Weak-area recommendations</h3>
+      ${renderWeakAreas()}
+    </div>
+    <div class="card">
+      <h3>Badges</h3>
+      <div class="badge-grid">${BADGES.map(b=>badgeHtml(b, state.badges.includes(b.id))).join("")}</div>
+    </div>
+    <div class="card">
+      <h3>Methodology note</h3>
+      <p class="help">Accuracy bands use a fixed status palette (green ≥75%, amber 50–74%, red &lt;50%) and are always paired with a numeric label — color is never the only signal. The percentile is a simulated estimate against an assumed peer-cohort accuracy distribution (mean 62%, s.d. 16), not a measurement against real test-takers. See the accompanying Evaluation Report for the full methodology and its limitations.</p>
+    </div>
+  `;
+}
+function renderBarChart(rows){
+  const withData = rows.filter(r=>r.attempts>0);
+  return `<div>${withData.map(r=>{
+    const band=accBand(r.acc);
+    return `<div class="bar-row">
+      <div class="bar-row__label">${escapeHtml(r.name)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${r.acc}%; background:${band.color};"></div></div>
+      <div class="bar-row__val">${r.acc}%</div>
+    </div>`;
+  }).join("")}</div>
+  <div class="legend">
+    <div class="legend__item"><span class="legend__swatch" style="background:var(--good)"></span>Strong ≥75%</div>
+    <div class="legend__item"><span class="legend__swatch" style="background:var(--warning)"></span>Moderate 50–74%</div>
+    <div class="legend__item"><span class="legend__swatch" style="background:var(--critical)"></span>Needs work &lt;50%</div>
+  </div>`;
+}
+function renderSparkline(){
+  const data = state.quizHistory.map(q=>q.accuracy);
+  const w=420, h=140, pad=22, max=100, min=0;
+  const pts = data.map((v,i)=>{
+    const x = pad + (data.length===1?0:(i/(data.length-1))*(w-2*pad));
+    const y = h-pad - ((v-min)/(max-min))*(h-2*pad);
+    return [x,y];
+  });
+  const path = pts.map((p,i)=>(i===0?"M":"L")+p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
+  const areaPath = path + ` L${pts[pts.length-1][0].toFixed(1)},${h-pad} L${pts[0][0].toFixed(1)},${h-pad} Z`;
+  const gridLines=[0,25,50,75,100].map(v=>{
+    const y=h-pad-((v-min)/(max-min))*(h-2*pad);
+    return `<line x1="${pad}" y1="${y}" x2="${w-pad}" y2="${y}" stroke="var(--line)" stroke-width="1"/><text x="2" y="${y+3}" font-size="9" fill="var(--muted)" font-family="IBM Plex Mono, monospace">${v}</text>`;
+  }).join("");
+  const dots = pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="1.5"/>`).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%; height:auto; overflow:visible;">
+    ${gridLines}
+    <path d="${areaPath}" fill="var(--accent)" opacity="0.12" stroke="none"/>
+    <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2"/>
+    ${dots}
+  </svg>
+  <div class="help" style="margin-top:6px;">Accuracy % across your last ${data.length} quiz attempt${data.length>1?"s":""}.</div>`;
+}
+
+/* ---------- Print report ---------- */
+function buildAndPrintReport(){
+  const p=state.profile;
+  const totalQuizzes=state.quizHistory.length;
+  const overallAcc = totalQuizzes ? Math.round(state.quizHistory.reduce((s,q)=>s+q.accuracy,0)/totalQuizzes) : 0;
+  const topicRows = TOPICS.map(t=>{ const pr=state.progress[t.id]; return {name:t.name, acc:(pr&&pr.attempts)?Math.round(pr.correct/pr.attempts*100):null, attempts:pr?pr.attempts:0}; }).filter(r=>r.attempts>0);
+  const root=document.getElementById("printReportRoot");
+  root.innerHTML = `
+   <div style="max-width:720px;margin:30px auto;font-family:'Public Sans',sans-serif;color:#111;">
+     <h1 style="font-family:'Fraunces',serif;">AptiGenie — Preparation Report</h1>
+     <p><strong>${escapeHtml(p.name)}</strong> · ${escapeHtml(p.target)} · ${p.level} level · Generated ${new Date().toLocaleDateString()}</p>
+     <h2>Summary</h2>
+     <table class="plain"><tr><td>Quizzes taken</td><td class="num">${totalQuizzes}</td></tr><tr><td>Overall accuracy</td><td class="num">${overallAcc}%</td></tr><tr><td>Badges earned</td><td class="num">${state.badges.length}/${BADGES.length}</td></tr></table>
+     <h2>Topic-wise performance</h2>
+     <table class="plain"><tr><th>Topic</th><th>Attempts</th><th>Accuracy</th></tr>
+       ${topicRows.map(r=>`<tr><td>${escapeHtml(r.name)}</td><td class="num">${r.attempts}</td><td class="num">${r.acc}%</td></tr>`).join("")}
+     </table>
+     <h2>Recommended next steps</h2>
+     ${renderWeakAreas()}
+   </div>`;
+  const shellEl=document.querySelector(".shell");
+  root.classList.remove("hidden");
+  shellEl.classList.add("hidden");
+  window.print();
+  root.classList.add("hidden");
+  shellEl.classList.remove("hidden");
+}
+
+/* ---------- Prompt Studio ---------- */
+let promptActiveTab = {};
+function renderPromptStudio(){
+  const box=document.getElementById("promptStudioBody");
+  box.innerHTML = PROMPT_LIBRARY.map(p=>{
+    const versions = p.v3 ? ["v1","v2","v3"] : ["v1","v2"];
+    if(!promptActiveTab[p.id]) promptActiveTab[p.id]=versions[versions.length-1];
+    return `<div class="promptcard" data-pid="${p.id}">
+      <div class="promptcard__head">
+        <div><strong>${p.stage}</strong></div>
+        <div class="promptcard__technique">${p.technique}</div>
+      </div>
+      <div class="promptcard__body">
+        <p class="help" style="margin-bottom:10px;">${p.desc}</p>
+        <div class="versiontabs">${versions.map(v=>`<button type="button" class="vtab ${promptActiveTab[p.id]===v?"active":""}" data-v="${v}">${v.toUpperCase()}</button>`).join("")}</div>
+        <div class="promptbox">${escapeHtml(p[promptActiveTab[p.id]])}</div>
+        <div class="promptnote">${escapeHtml(p.why)}</div>
+      </div>
+    </div>`;
+  }).join("") + renderPromptPlayground();
+  box.querySelectorAll(".vtab").forEach(btn=>btn.addEventListener("click",()=>{
+    const pid=btn.closest(".promptcard").dataset.pid;
+    promptActiveTab[pid]=btn.dataset.v;
+    renderPromptStudio();
+  }));
+  wirePromptPlayground();
+}
+function renderPromptPlayground(){
+  return `<div class="card">
+    <h3>Try it: customize &amp; compose a prompt</h3>
+    <p class="help">This fills the Stage 2 (Question Generation) template live with your inputs — exactly what would be sent to a Generative AI API such as Claude in production. No live API call is made in this prototype; Regenerate cycles through pre-validated sample outputs to simulate that call.</p>
+    <div class="grid grid-3">
+      <div class="field"><label>Topic</label><select id="ppTopic">${TOPICS.map(t=>`<option value="${t.id}">${t.name}</option>`).join("")}</select></div>
+      <div class="field"><label>Difficulty</label><select id="ppDiff"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select></div>
+      <div class="field"><label>Count</label><select id="ppCount"><option>3</option><option selected>5</option><option>8</option></select></div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn--primary btn--sm" id="ppCompose">Compose prompt</button>
+      <button class="btn btn--sm" id="ppRegenerate">Regenerate sample output</button>
+    </div>
+    <div class="promptbox" id="ppOutput" style="margin-top:12px;">Choose your inputs above and click "Compose prompt".</div>
+    <div class="output-preview" id="ppSample" style="display:none;">
+      <div class="output-preview__label">Simulated model output (sample <span id="ppSampleN">1</span> of 3)</div>
+      <div id="ppSampleBody"></div>
+    </div>
+  </div>`;
+}
+function wirePromptPlayground(){
+  let sampleIdx=0;
+  document.getElementById("ppCompose").addEventListener("click",()=>{
+    const t=TOPICS.find(x=>x.id===document.getElementById("ppTopic").value);
+    const diff=document.getElementById("ppDiff").value;
+    const count=document.getElementById("ppCount").value;
+    let filled = PROMPT_LIBRARY.find(p=>p.id==="question").v2;
+    filled = filled.replaceAll("{{formulas_from_stage_1}}", t.concept.formulas.map(f=>"- "+f).join("\n"));
+    filled = filled.replaceAll("{{count}}", count).replaceAll("{{topic}}", t.name).replaceAll("{{difficulty}}", diff);
+    document.getElementById("ppOutput").textContent = filled;
+    sampleIdx=0; showSample(t, diff, sampleIdx);
+  });
+  document.getElementById("ppRegenerate").addEventListener("click",()=>{
+    const t=TOPICS.find(x=>x.id===document.getElementById("ppTopic").value);
+    const diff=document.getElementById("ppDiff").value;
+    sampleIdx=(sampleIdx+1)%3; showSample(t,diff,sampleIdx);
+  });
+  function showSample(t, diff, idx){
+    const box=document.getElementById("ppSample"); box.style.display="block";
+    document.getElementById("ppSampleN").textContent = idx+1;
+    const pool = t.questions.filter(q=>q.difficulty===diff);
+    const list = pool.length ? pool : t.questions;
+    const q = list[idx % list.length];
+    document.getElementById("ppSampleBody").innerHTML = `<strong>${escapeHtml(q.text)}</strong><div class="help" style="margin-top:6px;">Options: ${q.options.map(escapeHtml).join(" · ")}</div><div class="help">Verified answer: ${escapeHtml(q.options[q.answer])}</div>`;
+  }
+}
+
+/* ---------- Global wiring ---------- */
+document.querySelectorAll(".navbtn[data-view]").forEach(b=>b.addEventListener("click",()=>{ if(!b.disabled) showView(b.dataset.view); }));
+document.querySelectorAll("[data-goto]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.goto)));
+document.getElementById("editProfileBtn").addEventListener("click",()=>{ prefillOnboarding(); showView("onboarding"); });
+document.getElementById("printReportBtn").addEventListener("click", buildAndPrintReport);
+document.querySelectorAll("#quizModeToggle .mode-btn").forEach(b=>b.addEventListener("click",()=>{
+  quizMode=b.dataset.mode;
+  document.querySelectorAll("#quizModeToggle .mode-btn").forEach(x=>x.classList.toggle("active", x===b));
+  renderQuizModeOptions();
+}));
+document.getElementById("startQuizBtn").addEventListener("click", startQuiz);
+document.querySelectorAll("#pfLevel .radio-pill").forEach(p=>p.addEventListener("click",()=>{
+  document.querySelectorAll("#pfLevel .radio-pill").forEach(x=>x.classList.remove("selected"));
+  p.classList.add("selected");
+}));
+document.getElementById("pfSubmit").addEventListener("click", submitProfile);
+
+/* ---------- Init ---------- */
+renderTopicChips();
+if(state.profile){ unlockNav(); renderSidebarProfile(); prefillOnboarding(); showView("dashboard"); }
+else { showView("onboarding"); }
+</script>
+
+
+
+
+</body>
+</html>
