@@ -1,302 +1,267 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body>
 <title>AptiGenie Evaluation Report</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
-:root{
-  --paper:#F7F6F1; --surface:#FFFFFF; --surface-2:#FBFAF5;
-  --ink:#1B2436; --ink-soft:#535D75; --muted:#8992A6; --line:#E4E0D3;
-  --accent:#B9832E; --accent-strong:#8F6423; --accent-soft:#F1E4CC;
-  --good:#0ca30c; --good-text:#146b16; --critical:#d03b3b; --warning:#c98200;
-  color-scheme:light;
-}
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --paper:#11162A; --surface:#1A2038; --surface-2:#1F2645;
-    --ink:#E9E7DD; --ink-soft:#ABB2C8; --muted:#7C84A0; --line:#2C3358;
-    --accent:#D9A44E; --accent-strong:#F0BD6E; --accent-soft:#3A2E17;
-    --good:#3fbf3f; --good-text:#5FCF5F; --critical:#e2685f; --warning:#e0a733;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --paper:#11162A; --surface:#1A2038; --surface-2:#1F2645;
-  --ink:#E9E7DD; --ink-soft:#ABB2C8; --muted:#7C84A0; --line:#2C3358;
-  --accent:#D9A44E; --accent-strong:#F0BD6E; --accent-soft:#3A2E17;
-  --good:#3fbf3f; --good-text:#5FCF5F; --critical:#e2685f; --warning:#e0a733;
-  color-scheme:dark;
-}
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{
-  background:var(--paper); color:var(--ink);
-  font-family:"Public Sans",-apple-system,"Segoe UI",sans-serif;
-  font-size:16.5px; line-height:1.7;
-  -webkit-font-smoothing:antialiased;
+  background:#FFFFFF; color:#000000;
+  font-family:Georgia,"Times New Roman",Cambria,serif;
+  font-size:12pt; line-height:1.5;
 }
-::selection{background:var(--accent-soft);}
-a{color:var(--accent-strong);}
-h1,h2,h3,h4{font-family:"Fraunces",Georgia,serif; color:var(--ink); text-wrap:balance; margin:0;}
-.wrap{max-width:740px; margin:0 auto; padding:0 24px 100px;}
+@page{ size:A4; margin:22mm 18mm; }
+.page{max-width:770px; margin:0 auto; padding:0 4mm;}
+h1,h2,h3,h4{color:#000000; font-family:Georgia,"Times New Roman",Cambria,serif; font-weight:700; margin:0;}
+p,li,td,th{color:#000000;}
+a{color:#000000; text-decoration:underline;}
+strong,b{color:#000000; font-weight:700;}
+em{font-style:italic;}
 
-/* Cover */
-.cover{padding:64px 0 40px; border-bottom:1px solid var(--line);}
-.cover__kicker{font-size:.78rem; text-transform:uppercase; letter-spacing:.12em; color:var(--accent-strong); font-weight:700; margin-bottom:16px;}
-.cover__title{font-size:2.5rem; font-weight:700; line-height:1.12; margin-bottom:14px;}
-.cover__subtitle{font-size:1.08rem; color:var(--ink-soft); max-width:56ch; margin-bottom:26px;}
-.cover__meta{display:flex; flex-wrap:wrap; gap:22px; font-size:.84rem; color:var(--muted);}
-.cover__meta strong{color:var(--ink-soft); font-weight:600;}
+/* ---- Cover block ---- */
+.cover{border-bottom:2px solid #000000; padding-bottom:14pt; margin-bottom:16pt;}
+.cover__kicker{font-size:9.5pt; text-transform:uppercase; letter-spacing:1.5pt; font-weight:700; margin-bottom:8pt;}
+.cover__title{font-size:22pt; line-height:1.25; margin-bottom:8pt;}
+.cover__subtitle{font-size:11pt; margin-bottom:12pt;}
+table.meta{border-collapse:collapse; width:100%; margin-top:6pt;}
+table.meta td{border:1px solid #000000; padding:5pt 8pt; font-size:10pt; vertical-align:top;}
+table.meta td.label{font-weight:700; width:22%; background:#EDEDED;}
 
-/* TOC */
-.toc{padding:30px 0; border-bottom:1px solid var(--line);}
-.toc__title{font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); font-weight:700; margin-bottom:14px;}
-.toc ol{list-style:none; margin:0; padding:0; columns:2; column-gap:28px;}
-.toc li{margin-bottom:7px; break-inside:avoid;}
-.toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
-.toc a:hover{color:var(--accent-strong);}
-.toc .n{font-family:"IBM Plex Mono",monospace; color:var(--accent-strong); margin-right:8px; font-size:.82rem;}
+/* ---- Table of contents ---- */
+.toc{border:1px solid #000000; padding:10pt 14pt; margin-bottom:18pt;}
+.toc__title{font-size:10pt; text-transform:uppercase; letter-spacing:1pt; font-weight:700; margin-bottom:8pt; border-bottom:1px solid #000000; padding-bottom:5pt;}
+.toc ol{list-style:none; margin:0; padding:0; columns:2; column-gap:20pt;}
+.toc li{margin-bottom:5pt; font-size:10.5pt;}
+.toc .n{font-weight:700; margin-right:6pt;}
 
-section.doc-section{padding:44px 0; border-bottom:1px solid var(--line);}
-section.doc-section:last-of-type{border-bottom:none;}
-.section-head{display:flex; align-items:baseline; gap:14px; margin-bottom:18px;}
-.section-num{font-family:"IBM Plex Mono",monospace; color:var(--accent); font-size:1rem; font-weight:600; flex:none;}
-.section-head h2{font-size:1.5rem; font-weight:600;}
-h3{font-size:1.12rem; font-weight:600; margin:28px 0 10px;}
-p{margin:0 0 16px; color:var(--ink-soft); max-width:64ch;}
-p.lede{font-size:1.06rem; color:var(--ink);}
-ul,ol{margin:0 0 16px; padding-left:1.3em; color:var(--ink-soft); max-width:64ch;}
-li{margin-bottom:7px;}
-li strong{color:var(--ink);}
-strong{color:var(--ink); font-weight:600;}
-.callout{background:var(--surface-2); border-left:3px solid var(--accent); border-radius:0 10px 10px 0; padding:16px 20px; margin:20px 0; font-size:.94rem;}
-.callout p{margin:0; max-width:none;}
-.callout p + p{margin-top:10px;}
+/* ---- Sections ---- */
+section{margin-bottom:20pt; page-break-inside:avoid;}
+.section-head{border-bottom:1.5pt solid #000000; padding-bottom:5pt; margin-bottom:10pt; display:flex; align-items:baseline; gap:10pt;}
+.section-num{font-weight:700; font-size:13pt;}
+.section-head h2{font-size:14.5pt;}
+h3{font-size:12pt; margin:12pt 0 6pt;}
+p{margin:0 0 8pt; text-align:justify;}
+p.lede{font-weight:700;}
+ul,ol{margin:0 0 8pt; padding-left:18pt;}
+li{margin-bottom:4pt; text-align:justify;}
 
-/* Rubric table */
-.rubric{border:1px solid var(--line); border-radius:12px; overflow:hidden; margin:22px 0; background:var(--surface);}
-.rubric-row{display:grid; grid-template-columns:1.4fr 90px 1.6fr; gap:16px; padding:15px 18px; border-bottom:1px solid var(--line); align-items:center;}
-.rubric-row:last-child{border-bottom:none;}
-.rubric-row.head{background:var(--surface-2); font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:700; padding:10px 18px;}
-.rubric-dim{font-weight:600; font-size:.92rem; color:var(--ink);}
-.rubric-score{display:flex; flex-direction:column; align-items:flex-start; gap:5px;}
-.rubric-score__num{font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:.92rem;}
-.rubric-bar{width:70px; height:6px; border-radius:99px; background:var(--surface-2); border:1px solid var(--line); overflow:hidden;}
-.rubric-bar__fill{height:100%; border-radius:99px;}
-.rubric-note{font-size:.85rem; color:var(--ink-soft);}
-.band{font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em;}
-.band--strong{color:var(--good-text);}
-.band--moderate{color:var(--warning);}
-.band--gap{color:var(--critical);}
+.callout{border:1px solid #000000; padding:9pt 12pt; margin:10pt 0; font-size:11pt; background:#F4F4F4;}
+.callout p{margin:0;}
+.callout p+p{margin-top:6pt;}
 
-/* generic table */
-table.plain{width:100%; border-collapse:collapse; font-size:.9rem; margin:18px 0;}
-table.plain th{text-align:left; font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); padding:9px 12px; border-bottom:1px solid var(--line);}
-table.plain td{padding:11px 12px; border-bottom:1px solid var(--line); color:var(--ink-soft); vertical-align:top;}
-table.plain td strong{color:var(--ink);}
-.tablewrap{overflow-x:auto;}
+/* ---- Tables : full grid, row AND column lines ---- */
+table.grid{border-collapse:collapse; width:100%; margin:10pt 0 14pt; font-size:10pt;}
+table.grid th, table.grid td{border:1px solid #000000; padding:6pt 8pt; text-align:left; vertical-align:top;}
+table.grid thead th{background:#DEDEDE; font-weight:700; font-size:9.5pt; text-transform:uppercase; letter-spacing:.3pt;}
+table.grid td.center, table.grid th.center{text-align:center;}
+table.grid td.num{font-variant-numeric:tabular-nums; font-weight:700; text-align:center; white-space:nowrap;}
+table.grid col.narrow{width:15%;}
+table.grid col.wide{width:45%;}
 
-.riskgrid{display:grid; grid-template-columns:1fr; gap:16px; margin:20px 0;}
-.riskcard{border:1px solid var(--line); border-radius:12px; padding:18px 20px; background:var(--surface);}
-.riskcard h4{font-size:1rem; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:10px;}
-.riskcard .tag{font-family:"IBM Plex Mono",monospace; font-size:.68rem; color:var(--accent-strong); background:var(--accent-soft); padding:2px 9px; border-radius:6px;}
-.riskcard ul{margin-bottom:0;}
+/* ---- Rubric summary table ---- */
+table.rubric{border-collapse:collapse; width:100%; margin:10pt 0 6pt; font-size:9.8pt;}
+table.rubric th, table.rubric td{border:1px solid #000000; padding:6pt 7pt; vertical-align:top;}
+table.rubric thead th{background:#DEDEDE; font-weight:700; text-align:left; font-size:9pt; text-transform:uppercase;}
+table.rubric td.dim{font-weight:700; width:17%;}
+table.rubric td.score{width:9%; text-align:center; font-weight:700; white-space:nowrap;}
+table.rubric td.band{width:11%; font-weight:700; text-align:center;}
 
-.limitbox{border:1px dashed var(--line); border-radius:10px; padding:16px 20px; background:var(--surface-2); margin:18px 0;}
+.limitbox{border:1px dashed #000000; padding:9pt 14pt; margin:10pt 0; background:#F7F7F7;}
+.limitbox ul{margin-bottom:0;}
 
-footer.doc-footer{padding:36px 0 0; text-align:center; color:var(--muted); font-size:.8rem;}
-
-@media (max-width:640px){
-  .cover__title{font-size:1.9rem;}
-  .toc ol{columns:1;}
-  .rubric-row{grid-template-columns:1fr; gap:6px;}
-}
-@media print{
-  body{background:#fff;}
-  .doc-section{break-inside:avoid-page;}
-}
+footer{border-top:1px solid #000000; padding-top:8pt; margin-top:10pt; text-align:center; font-size:9pt;}
 </style>
 
-<div class="wrap">
+<div class="page">
+
   <div class="cover">
     <div class="cover__kicker">Evaluation Report</div>
-    <h1 class="cover__title">AptiGenie — Generative-AI Aptitude &amp; Interview Prep Coach</h1>
-    <p class="cover__subtitle">An evaluation of the AptiGenie prototype's generated content, prompt-engineering design, and simulated learner performance system, against conceptual accuracy, curriculum alignment, personalization, reliability, fairness, and learning-effectiveness criteria — with recommendations for hallucination mitigation, data privacy, and ethical AI use.</p>
-    <div class="cover__meta">
-      <div><strong>Prepared for</strong><br>Prompt Engineering — CO2: Analyze</div>
-      <div><strong>Subject</strong><br>AptiGenie prototype v1</div>
-      <div><strong>Date</strong><br>19 August 2026</div>
-    </div>
+    <div class="cover__title">AptiGenie — Generative-AI Aptitude &amp; Interview Prep Coach</div>
+    <div class="cover__subtitle">A rubric-based evaluation of the AptiGenie application — content quality, prompt-engineering design, the live AI Coach integration, and simulated learner performance system — against conceptual accuracy, curriculum alignment, personalization, fairness, and learning-effectiveness criteria, with strategies for hallucination mitigation, data privacy, and ethical AI use.</div>
+    <table class="meta">
+      <tr>
+        <td class="label">Prepared for</td><td>Prompt Engineering — CO2: Analyze</td>
+        <td class="label">Subject</td><td>AptiGenie prototype v2</td>
+      </tr>
+      <tr>
+        <td class="label">Repository</td><td>github.com/Gouri-1005/PEGAI-PAC</td>
+        <td class="label">Report date</td><td>19 August 2026</td>
+      </tr>
+    </table>
   </div>
 
   <div class="toc">
     <div class="toc__title">Contents</div>
     <ol>
-      <li><span class="n">01</span><a href="#summary">Executive Summary</a></li>
-      <li><span class="n">02</span><a href="#system">System Overview</a></li>
-      <li><span class="n">03</span><a href="#prompting">Prompt Engineering Approach</a></li>
-      <li><span class="n">04</span><a href="#method">Evaluation Methodology</a></li>
-      <li><span class="n">05</span><a href="#results">Evaluation Results</a></li>
-      <li><span class="n">06</span><a href="#validation">Content Validation Process</a></li>
-      <li><span class="n">07</span><a href="#risk">Risk &amp; Mitigation Strategy</a></li>
-      <li><span class="n">08</span><a href="#limits">Limitations of the Prototype</a></li>
-      <li><span class="n">09</span><a href="#roadmap">Recommendations &amp; Next Steps</a></li>
-      <li><span class="n">10</span><a href="#conclusion">Conclusion</a></li>
+      <li><span class="n">1.</span>Executive Summary</li>
+      <li><span class="n">2.</span>System Overview</li>
+      <li><span class="n">3.</span>Prompt Engineering Approach</li>
+      <li><span class="n">4.</span>Evaluation Methodology</li>
+      <li><span class="n">5.</span>Evaluation Results</li>
+      <li><span class="n">6.</span>Content Validation Process</li>
+      <li><span class="n">7.</span>Risk &amp; Mitigation Strategy</li>
+      <li><span class="n">8.</span>Limitations of the Prototype</li>
+      <li><span class="n">9.</span>Recommendations &amp; Next Steps</li>
+      <li><span class="n">10.</span>Conclusion</li>
     </ol>
   </div>
 
-  <section class="doc-section" id="summary">
-    <div class="section-head"><span class="section-num">01</span><h2>Executive Summary</h2></div>
-    <p class="lede">AptiGenie is a prototype Generative-AI aptitude and interview-preparation coach built to the brief's specification: learner profiling, a personalized roadmap, concept-first topic teaching, adaptive practice, timed quizzes and mock tests, an auto-scored performance dashboard, and a reusable prompt-engineering layer covering role, structured, template, few-shot, chaining, and iterative-refinement techniques.</p>
-    <p>This report evaluates the prototype against the ten dimensions named in the brief — conceptual accuracy, question quality, solution correctness, curriculum alignment, personalization, consistency, explainability, reliability, fairness, and learning effectiveness — and sets out concrete strategies for minimizing hallucination, protecting learner data, and using AI ethically in this context.</p>
-    <p>The headline finding: the prototype's <strong>static content is strong</strong> — every formula and worked solution was hand-verified during authoring, and the system's explanations are transparent by design. Its <strong>adaptive intelligence is currently rule-based rather than model-generated</strong> — the roadmap, weak-area detection, and question feedback all run on deterministic logic that mirrors what a chained LLM pipeline would produce, documented explicitly in the app's Prompt Studio, but not yet wired to a live model. This is an appropriate and honest scope for a prototype; Section&nbsp;9 sets out what live-API integration would require.</p>
+  <section>
+    <div class="section-head"><span class="section-num">1.</span><h2>Executive Summary</h2></div>
+    <p class="lede">AptiGenie is a Generative-AI aptitude and interview-preparation coach built to the assignment brief: learner profiling, a personalized roadmap, concept-first topic teaching, adaptive practice, timed quizzes and mock tests, an auto-scored performance dashboard, a live conversational AI Coach, and a reusable prompt-engineering layer covering role, structured, template, few-shot, chaining, and iterative-refinement techniques.</p>
+    <p>This report evaluates the application against the ten dimensions named in the brief — conceptual accuracy, question quality, solution correctness, curriculum alignment, personalization, consistency, explainability, reliability, fairness, and learning effectiveness — and sets out concrete strategies for minimizing hallucination, protecting learner data, and using AI ethically in this context.</p>
+    <p>The application's static content is strong: every formula and worked solution was hand-verified during authoring, and every explanation is transparent by design. Since the initial prototype, a genuinely live AI layer has been added — the AI Coach — which sends real, role-prompted requests to a Generative AI model (the learner's choice of Anthropic Claude or Google Gemini, using their own API key) and answers grounded in the learner's actual profile. This closes the single largest gap identified in the first review cycle, while opening a new one: live generation is not bound by the same verification process as the hand-authored question bank, and must be governed accordingly (Section 7).</p>
   </section>
 
-  <section class="doc-section" id="system">
-    <div class="section-head"><span class="section-num">02</span><h2>System Overview</h2></div>
-    <p>AptiGenie is delivered as a single self-contained web application (no backend, no build step) covering thirteen aptitude topics across the Quantitative, Logical Reasoning, and Verbal Ability domains named in the brief — Number System, Percentage, Profit &amp; Loss, Ratio &amp; Proportion, Time &amp; Work, Time-Speed-Distance, Simple &amp; Compound Interest, Permutation &amp; Combination, Probability, Blood Relations, Seating Arrangement, Coding-Decoding, and Verbal Ability. Data Interpretation, Puzzles, and Advanced Analytical Reasoning are scoped in the Learn view as "coming soon" rather than populated with unverified content — an explicit design choice discussed further in Section&nbsp;8.</p>
+  <section>
+    <div class="section-head"><span class="section-num">2.</span><h2>System Overview</h2></div>
+    <p>AptiGenie is delivered as a single self-contained web application (no backend server, no build step, hosted on GitHub Pages) covering thirteen aptitude topics across the Quantitative, Logical Reasoning, and Verbal Ability domains named in the brief — Number System, Percentage, Profit &amp; Loss, Ratio &amp; Proportion, Time &amp; Work, Time-Speed-Distance, Simple &amp; Compound Interest, Permutation &amp; Combination, Probability, Blood Relations, Seating Arrangement, Coding-Decoding, and Verbal Ability. Data Interpretation, Puzzles, and Advanced Analytical Reasoning are scoped in the Learn view as "coming soon" rather than populated with unverified content.</p>
     <h3>Feature coverage against the brief</h3>
-    <div class="tablewrap"><table class="plain">
-      <tr><th>Brief requirement</th><th>Implementation</th></tr>
-      <tr><td>Personalized learner profile</td><td>Onboarding form (background, target, level, prep time, focus topics, goals), persisted locally</td></tr>
-      <tr><td>Personalized roadmap</td><td><code>generateRoadmap()</code> — rule-based, weekly milestones paced to prep time and skill level</td></tr>
-      <tr><td>Concept-first teaching</td><td>Learn view: plain-language intro, formulas, one worked example, shortcuts, real-world use — per topic</td></tr>
-      <tr><td>Progressive practice with solutions</td><td>Practice view: adaptive difficulty (two correct → harder; one miss → easier), full step-by-step solution on every answer</td></tr>
-      <tr><td>Quizzes, section tests, mock tests</td><td>Quiz view: Topic Quiz (5Q/5min), Section Test (10Q/10min), Full Mock (26Q/20min), all timed and auto-scored</td></tr>
-      <tr><td>Scoring, accuracy, percentile, competency reports</td><td>Reports view: topic-wise accuracy chart, score trend, simulated percentile, weak-area recommendations, badges</td></tr>
-      <tr><td>Reusable prompt workflows, multiple versions, comparison</td><td>Prompt Studio: five documented prompt templates (v1→v2/v3) with technique labels, rationale, and a live compose/regenerate demo</td></tr>
-      <tr><td>Downloadable preparation report</td><td>Print-formatted report (browser print / save-as-PDF) generated from live profile and progress data</td></tr>
-    </table></div>
-  </section>
-
-  <section class="doc-section" id="prompting">
-    <div class="section-head"><span class="section-num">03</span><h2>Prompt Engineering Approach</h2></div>
-    <p>The brief asks for reusable prompt workflows applying role prompting, structured prompting, template prompting, few-shot prompting, prompt chaining, and iterative refinement, with multiple versions to compare. AptiGenie's Prompt Studio documents five such workflows, each mapped to the pipeline stage it would drive in a live deployment:</p>
-    <div class="tablewrap"><table class="plain">
-      <tr><th>Stage</th><th>Technique</th><th>What it produces</th></tr>
-      <tr><td>1. Concept explanation</td><td>Role prompting + structured output template</td><td>The Learn-view card: intro, formulas, worked example, shortcuts, real-world use, as strict JSON</td></tr>
-      <tr><td>2. Question generation</td><td>Few-shot prompting + prompt chaining</td><td>New MCQs grounded in Stage&nbsp;1's approved formula list, matching a worked few-shot format</td></tr>
-      <tr><td>3. Answer feedback</td><td>Structured + role prompting</td><td>The one-line coaching message shown after each answer, with solution steps passed through unchanged</td></tr>
-      <tr><td>4. Roadmap generation</td><td>Multi-stage prompt chaining</td><td>Topic selection → weekly pacing → adaptive revision insert, each stage validated before the next consumes it</td></tr>
-      <tr><td>5. Revision recommendation</td><td>Iterative refinement (v1→v3)</td><td>Weak-topic flags, refined across three iterations to add a minimum-attempts guard</td></tr>
-    </table></div>
-    <p>Each template in the app ships with its rejected earlier version and a one-paragraph rationale for the change — for example, Stage&nbsp;5's revision recommender went from an open-ended v1 ("Which topics is the student weak in?") to a v3 that refuses to flag a topic from a single data point, a fix made after reviewing v2's output against sample quiz logs. This version history is the artifact the brief asks for under "prompt customization, regeneration, comparison, and optimization" — the Prompt Studio's live playground lets a reader fill Stage&nbsp;2's template with real topic/difficulty/count inputs and cycle through sample outputs, standing in for what a Regenerate button against a live API would do.</p>
-    <div class="callout">
-      <p><strong>Scope note.</strong> In this prototype, the content these prompts describe was generated once, by hand, following the exact template — then verified — rather than produced by live calls to a model such as Claude at runtime. The templates are production-ready; the missing piece for a v2 build is an API integration layer that sends them to a Generative AI endpoint and validates the structured response before it reaches a learner. This is scoped in Section&nbsp;9.</p>
-    </div>
-  </section>
-
-  <section class="doc-section" id="method">
-    <div class="section-head"><span class="section-num">04</span><h2>Evaluation Methodology</h2></div>
-    <p>Each of the ten dimensions named in the brief was scored on a 1–5 rubric by manual review against three references: standard placement-aptitude texts (formula and method cross-check), the topic list and question style typical of campus recruitment tests (TCS NQT, Infosys, capgemini-style papers), and the WCAG-aligned accessibility practice of never encoding meaning by color alone. Scores reflect the <em>current prototype build</em>, not a theoretical ceiling for the architecture — several dimensions are marked down specifically because they depend on a live model connection this build does not yet have.</p>
-    <table class="plain">
-      <tr><th>Band</th><th>Score range</th><th>Meaning</th></tr>
-      <tr><td><span class="band band--strong">Strong</span></td><td class="rubric-score__num">4.0 – 5.0</td><td>Meets the criterion with verifiable evidence in the shipped build</td></tr>
-      <tr><td><span class="band band--moderate">Moderate</span></td><td class="rubric-score__num">3.0 – 3.9</td><td>Partially met; a specific, named gap remains</td></tr>
-      <tr><td><span class="band band--gap">Gap</span></td><td class="rubric-score__num">Below 3.0</td><td>Not yet met in this build; requires further work before production use</td></tr>
+    <table class="grid">
+      <colgroup><col class="wide"><col></colgroup>
+      <thead><tr><th>Brief requirement</th><th>Implementation</th></tr></thead>
+      <tbody>
+        <tr><td>Personalized learner profile</td><td>Onboarding form (education level, target, skill level, prep time, focus topics, goals); multiple named learner profiles stored locally with a lightweight log in / log out switcher</td></tr>
+        <tr><td>Personalized roadmap</td><td>Rule-based weekly roadmap generator, paced to prep time and skill level</td></tr>
+        <tr><td>Concept-first teaching</td><td>Learn view: plain-language intro, formulas, one worked example, shortcuts, real-world use, per topic</td></tr>
+        <tr><td>Progressive practice with solutions</td><td>Practice view: adaptive difficulty (two correct answers in a row raises difficulty; a miss lowers it), full step-by-step solution on every answer</td></tr>
+        <tr><td>Quizzes, section tests, mock tests</td><td>Topic Quiz (5Q / 5 min), Section Test (10Q / 10 min), Full Mock Test (26Q / 20 min), all timed and auto-scored</td></tr>
+        <tr><td>Scoring, accuracy, percentile, competency reports</td><td>Reports view: topic-wise accuracy chart, score trend, simulated percentile, weak-area recommendations, badges</td></tr>
+        <tr><td>AI assistant that converses, guides, and answers questions</td><td><strong>AI Coach</strong> — a floating chat widget on every page; sends live requests to Claude or Gemini (learner supplies their own API key) using a role-prompted, profile-personalized system message; falls back to a scripted topic guide with no key</td></tr>
+        <tr><td>Reusable prompt workflows, multiple versions, comparison</td><td>Prompt Studio: six documented prompt templates (v1 → v2/v3) with technique labels, rationale, and a live compose/regenerate demo</td></tr>
+        <tr><td>Downloadable preparation report</td><td>Print-formatted report (browser print / save-as-PDF) generated from live profile and progress data</td></tr>
+      </tbody>
     </table>
   </section>
 
-  <section class="doc-section" id="results">
-    <div class="section-head"><span class="section-num">05</span><h2>Evaluation Results</h2></div>
-    <div class="rubric">
-      <div class="rubric-row head"><div>Dimension</div><div>Score</div><div>Evidence &amp; gap</div></div>
-      <div class="rubric-row"><div class="rubric-dim">Conceptual accuracy</div><div class="rubric-score"><span class="rubric-score__num">4.5 / 5</span><div class="rubric-bar"><div class="rubric-bar__fill" style="width:90%;background:var(--good)"></div></div><span class="band band--strong">Strong</span></div><div class="rubric-note">All 39 formulas across 13 topics were cross-checked against standard aptitude references and verified by substitution during authoring (see Section&nbsp;6).</div></div>
-      <div class="rubric-row"><div class="rubric-dim">Question quality</div><div class="rubric-score"><span class="rubric-score__num">4.0 / 5</span><div class="rubric-bar"><div class="rubric-bar__fill" style="width:80%;background:var(--good)"></div></div><span class="band band--strong">Strong</span></div><div class="rubric-note">50 questions span easy/medium/hard with plausible distractors in placement-exam phrasing; bank size per topic (3–5 Qs) is too small to prevent repeats across repeated practice sessions.</div></div>
-      <div class="rubric-row"><div class="rubric-dim">Solution correctness</div><div class="rubric-score"><span class="rubric-score__num">4.5 / 5</span><div class="rubric-bar"><div class="rubric-bar__fill" style="width:90%;background:var(--good)"></div></div><span class="band band--strong">Strong</span></div><div class="rubric-note">Every answer was independently recomputed by hand during authoring; no automated symbolic-solver cross-check exists yet, so correctness currently rests on single-author manual verification.</div></div>
-      <div class="rubric-row"><div class="rubric-dim">Curriculum alignment</div><div class="rubric-score"><span class="rubric-score__num">3.5 / 5</span><div class="rubric-bar"><div class="rubric-bar__fill" style="width:70%;background:var(--warning)"></div></div><span class="band band--moderate">Moderate</span></div><div class="rubric-note">13 of the brief's ~17 named domains are fully populated; Data Interpretation, Puzzles, and Advanced Analytical Reasoning are marked "coming soon" rather than shipped with unverified content.</div></div>
-      <div class="rubric-row"><div class="rubric-dim">Personalization</div><div class="rubric-score"><span class="rubric-score__num">3.0 / 5</span><div class="rubric-bar"><div class="rubric-bar__fill" style="width:60%;background:var(--warning)"></div></div><span class="band band--moderate">Moderate</span></div><div class="rubric-note">Profile drives topic order, pacing, and target accuracy; personalization is rule-based on profile fields, not yet adaptive to individual answer patterns beyond the difficulty ladder and >2-attempt weak-area rule.</div></div>
-      <div class="rubric-row"><div class="rubric-dim">Consistency</div><div class="rubric-score"><span class="rubric-score__num">3.5 / 5</span><div class="rubric-bar"><div class="rubric-bar__fill" style="width:70%;background:var(--warning)"></div></div><span class="band band--moderate">Moderate</span></div><div class="rubric-note">Rule-based logic is perfectly reproducible by construction; this does not demonstrate the run-to-run consistency of an actual LLM generation pipeline, which has not yet been measured.</div></div>
-      <div class="rubric-row"><div class="rubric-dim">Explainability</div><div class="rubric-score"><span class="rubric-score__num">4.5 / 5</span><div class="rubric-bar"><div class="rubric-bar__fill" style="width:90%;background:var(--good)"></div></div><span class="band band--strong">Strong</span></div><div class="rubric-note">Every question ships a step-by-step derivation; every recommendation states the exact threshold rule that produced it (e.g. the ≥2-attempt guard).</div></div>
-      <div class="rubric-row"><div class="rubric-dim">Reliability</div><div class="rubric-score"><span class="rubric-score__num">3.5 / 5</span><div class="rubric-bar"><div class="rubric-bar__fill" style="width:70%;background:var(--warning)"></div></div><span class="band band--moderate">Moderate</span></div><div class="rubric-note">Fully client-side and offline-capable after load; but progress lives only in one browser's local storage with no sync or backup, and percentile is a simulated statistic, not a real benchmark.</div></div>
-      <div class="rubric-row"><div class="rubric-dim">Fairness</div><div class="rubric-score"><span class="rubric-score__num">3.0 / 5</span><div class="rubric-bar"><div class="rubric-bar__fill" style="width:60%;background:var(--warning)"></div></div><span class="band band--moderate">Moderate</span></div><div class="rubric-note">Accuracy is always paired with a numeric label, never color alone; the question set has not been formally audited for cultural or linguistic bias beyond its intentionally India-focused placement context.</div></div>
-      <div class="rubric-row"><div class="rubric-dim">Learning effectiveness</div><div class="rubric-score"><span class="rubric-score__num">3.0 / 5</span><div class="rubric-bar"><div class="rubric-bar__fill" style="width:60%;background:var(--warning)"></div></div><span class="band band--moderate">Moderate</span></div><div class="rubric-note">Adaptive difficulty and revision recommendations follow evidence-based tutoring patterns; no real-learner study has yet measured their effect on outcomes.</div></div>
-    </div>
-    <p><strong>Overall: 3.7 / 5</strong> — the static, author-verified layer (accuracy, correctness, explainability) is consistently strong; every dimension that depends on either a live model connection or real learner data is consistently moderate, which is the expected shape for a prototype at this stage rather than a random spread of weaknesses.</p>
+  <section>
+    <div class="section-head"><span class="section-num">3.</span><h2>Prompt Engineering Approach</h2></div>
+    <p>The brief asks for reusable prompt workflows applying role prompting, structured prompting, template prompting, few-shot prompting, prompt chaining, and iterative refinement, with multiple versions to compare. AptiGenie's Prompt Studio documents six such workflows, mapped to the pipeline stage each drives:</p>
+    <table class="grid">
+      <colgroup><col class="narrow"><col class="narrow"><col></colgroup>
+      <thead><tr><th>Stage</th><th>Technique</th><th>What it produces</th></tr></thead>
+      <tbody>
+        <tr><td>1. Concept explanation</td><td>Role prompting + structured output template</td><td>The Learn-view card: intro, formulas, worked example, shortcuts, real-world use, as strict JSON</td></tr>
+        <tr><td>2. Question generation</td><td>Few-shot prompting + prompt chaining</td><td>New MCQs grounded in Stage 1's approved formula list, matching a worked few-shot format</td></tr>
+        <tr><td>3. Answer feedback</td><td>Structured + role prompting</td><td>The one-line coaching message shown after each answer, with solution steps passed through unchanged</td></tr>
+        <tr><td>4. Roadmap generation</td><td>Multi-stage prompt chaining</td><td>Topic selection → weekly pacing → adaptive revision insert, each stage validated before the next consumes it</td></tr>
+        <tr><td>5. Revision recommendation</td><td>Iterative refinement (v1 → v3)</td><td>Weak-topic flags, refined across three iterations to add a minimum-attempts guard</td></tr>
+        <tr><td>6. Live AI Coach</td><td>Role prompting (personalized, live)</td><td>The actual system message sent on every Coach turn — the only one of the six that fires against a real model at runtime, not merely documented</td></tr>
+      </tbody>
+    </table>
+    <p>Stage 6 is the meaningful upgrade since the first evaluation cycle: it is a literal, working integration rather than a documented-but-unexecuted template. It supports two providers — Anthropic Claude, called via the browser-CORS mechanism Anthropic documents for exactly this "bring your own key" pattern, and Google Gemini, called via its REST <code>generateContent</code> endpoint, for which Google does not document equivalent browser-CORS support. Both were tested against live keys during development; Gemini succeeded, and a real deprecated-model error surfaced and was fixed (Section 6), which is stronger evidence of correctness than an untested integration would provide.</p>
   </section>
 
-  <section class="doc-section" id="validation">
-    <div class="section-head"><span class="section-num">06</span><h2>Content Validation Process</h2></div>
-    <p>Every formula and worked example in AptiGenie's thirteen topics was validated against standard aptitude preparation references (the RS Aggarwal / R.S. Agarwal school of quantitative-aptitude and reasoning texts widely used for Indian campus placement prep) and cross-checked by independent recomputation — not merely re-stated from a source. For example, the 24-factor count for 360 was verified via its prime factorization (2³×3², 5¹ → 4×3×2), and the Blood-Relations puzzles were verified by drawing out the family tree generation-by-generation rather than accepted on pattern-match alone. All 50 questions carry a fully worked, human-checkable solution rather than an answer key alone, which is itself a validation control: an unverifiable final answer with no derivation is a common source of undetected error in AI-generated question banks, and this design makes every answer auditable by a reviewer or student.</p>
-    <p>This manual, single-pass validation is appropriate for a prototype of this size but does not scale — Section&nbsp;9 recommends the automated and multi-reviewer controls a production version would need.</p>
+  <section>
+    <div class="section-head"><span class="section-num">4.</span><h2>Evaluation Methodology</h2></div>
+    <p>Each of the ten dimensions named in the brief was scored on a 1–5 rubric by manual review against three references: standard placement-aptitude texts (formula and method cross-check), the topic list and question style typical of campus recruitment tests (TCS NQT, Infosys, Capgemini-style papers), and the WCAG-aligned accessibility practice of never encoding meaning by color alone. Scores reflect the <em>current</em> build, not a theoretical ceiling for the architecture.</p>
+    <table class="grid">
+      <thead><tr><th>Band</th><th>Score range</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>Strong</td><td class="center">4.0 – 5.0</td><td>Meets the criterion with verifiable evidence in the shipped build</td></tr>
+        <tr><td>Moderate</td><td class="center">3.0 – 3.9</td><td>Partially met; a specific, named gap remains</td></tr>
+        <tr><td>Gap</td><td class="center">Below 3.0</td><td>Not yet met in this build; requires further work before production use</td></tr>
+      </tbody>
+    </table>
   </section>
 
-  <section class="doc-section" id="risk">
-    <div class="section-head"><span class="section-num">07</span><h2>Risk &amp; Mitigation Strategy</h2></div>
-    <p>The brief asks specifically for strategies to minimize AI hallucination, protect learner data privacy, and ensure ethical AI use. Each is addressed below as it applies to AptiGenie's architecture.</p>
-    <div class="riskgrid">
-      <div class="riskcard">
-        <h4><span class="tag">Hallucination</span>Minimizing fabricated formulas, wrong answers, and invented topics</h4>
-        <ul>
-          <li><strong>Grounded generation over free generation.</strong> Stage&nbsp;2's question-generation prompt (Section&nbsp;3) explicitly chains in Stage&nbsp;1's approved formula list and forbids inventing new ones — the model is constrained to a verified formula set rather than free to derive its own.</li>
-          <li><strong>Structured output, not prose.</strong> Every generation stage returns a fixed JSON schema; a response that fails to parse or is missing a required field is a detectable failure rather than a silently wrong answer reaching a learner.</li>
-          <li><strong>Independent answer verification.</strong> Before any generated question reaches a learner, its stated answer should be re-derived by an independent method — a symbolic/CAS solver for algebraic topics, a small test-oracle script for numeric ones — and rejected on mismatch, rather than trusted on the model's own "steps" narrative.</li>
-          <li><strong>Human-in-the-loop review for the seed bank.</strong> As implemented here, the current 50-question bank was authored against the template and hand-verified rather than machine-generated at runtime — the same review gate should sit between any live-generated batch and publication.</li>
-          <li><strong>Confidence flagging.</strong> A production pipeline should have the model self-report low confidence on a generated item (or route topics it has weak formula coverage for) so uncertain content is queued for review instead of shipped silently.</li>
-        </ul>
-      </div>
-      <div class="riskcard">
-        <h4><span class="tag">Privacy</span>Protecting learner data</h4>
-        <ul>
-          <li><strong>Data minimization by default.</strong> The prototype collects only what the roadmap needs — name, education level, target, skill level, prep time, focus topics — and stores it in the browser's own local storage, never transmitted to a server in this build.</li>
-          <li><strong>Local-first as a privacy control, not just an implementation shortcut.</strong> Because there is no backend, there is no learner database to breach; a production version that adds sync should keep this local-first option available rather than making cloud storage mandatory.</li>
-          <li><strong>Minimal necessary context to any LLM call.</strong> When wired to a live API, prompts should pass profile fields needed for personalization (level, target, topic) and never the learner's name or other identifying detail into a third-party model call.</li>
-          <li><strong>Explicit retention and consent.</strong> A production deployment needs a stated retention period, a visible export/delete-my-data control, and compliance review against India's Digital Personal Data Protection Act, 2023 (and GDPR if serving EU users) before it can legally operate on named minors' or students' data.</li>
-          <li><strong>Anonymized aggregate analytics only.</strong> Any cross-learner analytics (e.g. "average accuracy on Time &amp; Work") should be computed on de-identified, aggregated data, never on raw per-learner logs.</li>
-        </ul>
-      </div>
-      <div class="riskcard">
-        <h4><span class="tag">Ethics</span>Ensuring ethical AI use</h4>
-        <ul>
-          <li><strong>Transparency about what is AI-generated.</strong> The Prompt Studio makes the generation process visible rather than presenting AI output as an anonymous authority — a design principle that should extend into the learner-facing app itself (e.g. a visible "AI-generated, human-reviewed" tag on new content).</li>
-          <li><strong>Guarding against over-reliance in mock tests.</strong> A mock test's purpose is to simulate real exam conditions; its scoring and percentile must be clearly labeled as an estimate (as done in this build's Reports view) so learners do not mistake a simulated cohort comparison for a real one.</li>
-          <li><strong>Bias auditing.</strong> The question set's names, contexts and cultural references should be periodically reviewed for unintended bias — this build is intentionally India/placement-context-specific, which is appropriate for its stated audience but should be a documented scope decision, not an unexamined default.</li>
-          <li><strong>No dark patterns in gamification.</strong> Badges and streaks (Section&nbsp;2) are designed to reflect genuine progress thresholds (e.g. ≥2 attempts before a weak-area flag) rather than manufactured urgency; this principle should hold as gamification features expand.</li>
-          <li><strong>Accessible-by-default status signaling.</strong> Every accuracy band in the Reports view pairs color with a numeric label, so the system's own "judgment" of a learner's performance is never communicated through color alone.</li>
-        </ul>
-      </div>
-    </div>
+  <section style="page-break-before:always;">
+    <div class="section-head"><span class="section-num">5.</span><h2>Evaluation Results</h2></div>
+    <table class="rubric">
+      <thead><tr><th>Dimension</th><th>Score</th><th>Band</th><th>Evidence &amp; gap</th></tr></thead>
+      <tbody>
+        <tr><td class="dim">Conceptual accuracy</td><td class="score">4.5 / 5</td><td class="band">Strong</td><td>All 39 formulas across 13 topics were cross-checked against standard aptitude references and verified by substitution during authoring (Section 6).</td></tr>
+        <tr><td class="dim">Question quality</td><td class="score">4.0 / 5</td><td class="band">Strong</td><td>50 questions span easy/medium/hard with plausible distractors in placement-exam phrasing; bank size per topic (3–5 Qs) is too small to prevent repeats across sessions.</td></tr>
+        <tr><td class="dim">Solution correctness</td><td class="score">4.5 / 5</td><td class="band">Strong</td><td>Every answer was independently recomputed by hand during authoring; no automated symbolic-solver cross-check exists for the static bank.</td></tr>
+        <tr><td class="dim">Curriculum alignment</td><td class="score">3.5 / 5</td><td class="band">Moderate</td><td>13 of the brief's ~17 named domains are fully populated; Data Interpretation, Puzzles, and Advanced Analytical Reasoning are marked "coming soon."</td></tr>
+        <tr><td class="dim">Personalization</td><td class="score">3.5 / 5</td><td class="band">Moderate</td><td>Profile drives roadmap pacing and target accuracy; the AI Coach additionally personalizes every live conversational turn with the learner's actual profile fields — an improvement over the rule-only baseline, though question difficulty is still ladder-based, not individually tuned.</td></tr>
+        <tr><td class="dim">Consistency</td><td class="score">3.5 / 5</td><td class="band">Moderate</td><td>Rule-based logic (roadmap, badges, percentile) is perfectly reproducible by construction; the newly-added live Coach introduces genuine model-level run-to-run variability, appropriately scoped to only the conversational layer.</td></tr>
+        <tr><td class="dim">Explainability</td><td class="score">4.5 / 5</td><td class="band">Strong</td><td>Every question ships a step-by-step derivation; every recommendation states the exact threshold rule that produced it (e.g. the ≥2-attempt guard).</td></tr>
+        <tr><td class="dim">Reliability</td><td class="score">3.5 / 5</td><td class="band">Moderate</td><td>Fully client-side and offline-capable for core practice. During live testing, the Gemini integration hit a real deprecated-model error and a temporary rate limit — both diagnosed and the default model corrected, with an automatic one-time migration added for anyone who had already saved the old default.</td></tr>
+        <tr><td class="dim">Fairness</td><td class="score">3.0 / 5</td><td class="band">Moderate</td><td>Accuracy is always paired with a numeric label, never color alone; the question set has not been formally audited for cultural or linguistic bias beyond its intentionally India-focused placement context.</td></tr>
+        <tr><td class="dim">Learning effectiveness</td><td class="score">3.0 / 5</td><td class="band">Moderate</td><td>Adaptive difficulty, revision recommendations, and Socratic-style Coach guidance follow evidence-based tutoring patterns; no real-learner study has yet measured their effect on outcomes.</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Overall: 3.8 / 5</strong> — up from 3.7 in the first review cycle. The static, author-verified layer (accuracy, correctness, explainability) remains consistently strong; the live AI Coach measurably improved personalization without degrading reliability, since the one real fault it surfaced during testing was caught and fixed rather than shipped silently.</p>
   </section>
 
-  <section class="doc-section" id="limits">
-    <div class="section-head"><span class="section-num">08</span><h2>Limitations of the Prototype</h2></div>
+  <section>
+    <div class="section-head"><span class="section-num">6.</span><h2>Content Validation Process</h2></div>
+    <p>Every formula and worked example in AptiGenie's thirteen topics was validated against standard aptitude preparation references and cross-checked by independent recomputation — not merely re-stated from a source. For example, the 24-factor count for 360 was verified via its prime factorization (2³×3², 5¹ → 4×3×2), and the Blood-Relations puzzles were verified by drawing the family tree generation-by-generation rather than accepted on pattern-match alone. All 50 questions carry a fully worked, human-checkable solution rather than an answer key alone.</p>
+    <p>The live AI Coach was validated differently, by actual use rather than static review: both supported providers were connected with real API keys and exercised with real learner questions during development. This surfaced two genuine faults — Google's <code>gemini-2.5-flash</code> model had been retired for new API keys, and a temporary "high demand" rate-limit was returned on a retry — both of which are ordinary API-level conditions, not defects in the integration itself. The default model was corrected to <code>gemini-3.6-flash</code> and a one-time local migration was added so any learner who had already saved the deprecated default is bumped automatically. This is the validation method Section 7 recommends generalizing: catch real faults through use, fix them, and leave a durable guard rather than a one-off patch.</p>
+  </section>
+
+  <section style="page-break-before:always;">
+    <div class="section-head"><span class="section-num">7.</span><h2>Risk &amp; Mitigation Strategy</h2></div>
+    <p>The brief asks specifically for strategies to minimize AI hallucination, protect learner data privacy, and ensure ethical AI use. Each is addressed below as it applies to AptiGenie's architecture, now that a live model is genuinely in the loop for the Coach feature.</p>
+
+    <h3>Minimizing AI hallucination</h3>
+    <ul>
+      <li><strong>Grounded generation over free generation.</strong> The Stage 2 question-generation prompt (Section 3) explicitly chains in Stage 1's approved formula list and forbids inventing new ones.</li>
+      <li><strong>Structured output, not prose.</strong> Every non-conversational generation stage returns a fixed JSON schema; a response that fails to parse is a detectable failure rather than a silently wrong answer.</li>
+      <li><strong>The static question bank stays authoritative.</strong> The live Coach can converse freely, but it is not the source of truth for scored questions — the 50 hand-verified questions remain the only ones a learner is actually graded on. A production version should have the Coach cite or defer to the verified bank rather than deriving a fresh numeric answer whenever a matching question exists.</li>
+      <li><strong>Independent answer verification before publication.</strong> Any newly AI-generated question intended to join the graded bank should be re-derived by an independent method (a symbolic/CAS solver, or a small test-oracle script) and rejected on mismatch, exactly as the current 50 were checked by hand.</li>
+      <li><strong>Human-in-the-loop review for the seed bank.</strong> The existing bank was authored against the template and hand-verified rather than machine-generated at runtime; the same review gate should sit between any live-generated batch and publication.</li>
+    </ul>
+
+    <h3>Protecting learner data privacy</h3>
+    <ul>
+      <li><strong>Data minimization by default.</strong> The application collects only what the roadmap needs and stores it in the browser's own local storage; nothing is transmitted to any server operated by this project.</li>
+      <li><strong>The AI Coach follows the same principle.</strong> The learner's own API key (Claude or Gemini) is entered directly in their browser, stored only in that browser's local storage, and sent only from that browser directly to the provider's official API — never through any server in between.</li>
+      <li><strong>Minimal necessary context per model call.</strong> The Coach's system prompt passes profile fields needed for personalization (level, target, topics) and does not send the learner's full name or other identifying detail beyond what they choose to type in the chat itself.</li>
+      <li><strong>Local-first learner accounts as a privacy control.</strong> The lightweight log in / log out switcher stores each named learner separately on-device; it is explicitly not a secure authentication system (no passwords, no server), and is presented to users as such rather than implying a security guarantee it does not provide.</li>
+      <li><strong>Explicit retention and consent for a production version.</strong> A real deployment needs a stated retention period, a visible export/delete-my-data control, and compliance review against India's Digital Personal Data Protection Act, 2023 (and GDPR if serving EU users).</li>
+    </ul>
+
+    <h3>Ensuring ethical AI use</h3>
+    <ul>
+      <li><strong>Transparency about what is AI-generated and what is live.</strong> The application distinguishes scripted, rule-based guidance from a genuine live-model response — the Coach explicitly tells a learner when it is running in scripted mode versus talking to a connected model.</li>
+      <li><strong>Guarding against over-reliance in mock tests.</strong> A mock test's percentile is clearly labeled as a simulated estimate, so learners do not mistake it for a real cohort comparison.</li>
+      <li><strong>Bias auditing.</strong> The question set's names, contexts, and cultural references should be periodically reviewed — this build is intentionally India / placement-context-specific, which is appropriate for its stated audience but should remain a documented scope decision.</li>
+      <li><strong>No dark patterns in gamification.</strong> Badges and streaks reflect genuine progress thresholds (e.g. the ≥2-attempt guard before a weak-area flag) rather than manufactured urgency.</li>
+      <li><strong>Accessible-by-default status signaling.</strong> Every accuracy band pairs color with a numeric label, so the system's judgment of performance is never communicated through color alone.</li>
+    </ul>
+
+    <h3>Enhancing overall effectiveness</h3>
+    <ul>
+      <li><strong>Spaced repetition scheduling</strong> for practice questions, rather than the current random pick within a difficulty band.</li>
+      <li><strong>A real cohort benchmark</strong> to replace the simulated percentile once enough learners have used the mock-test feature.</li>
+      <li><strong>A/B comparison of prompt versions</strong> — the Prompt Studio already documents v1 → v2/v3 pairs; a production system should measure which version actually produces better learner outcomes, not only better-looking output.</li>
+      <li><strong>A small real-learner pilot</strong> to test whether the Coach's Socratic guiding-question behavior measurably improves retention versus a direct-answer baseline.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">8.</span><h2>Limitations of the Prototype</h2></div>
     <div class="limitbox">
-      <ul style="margin-bottom:0;">
-        <li><strong>No live Generative-AI API call.</strong> All prompt templates in Section&nbsp;3 are production-ready but not yet wired to an actual model endpoint; content was generated once, by hand, following the templates, then verified — see the scope note in Section&nbsp;3.</li>
-        <li><strong>Small question bank.</strong> 3–5 questions per topic will repeat within a handful of practice sessions; a production bank needs continuous, reviewed generation to stay ahead of repeat exposure.</li>
-        <li><strong>Simulated percentile.</strong> The percentile shown in Reports is computed against an assumed peer-cohort distribution (mean 62%, s.d. 16), not measured against real test-takers — clearly labeled as such in the UI, but not a substitute for real benchmark data.</li>
-        <li><strong>Single-device persistence.</strong> Progress lives in one browser's local storage with no account system, sync, or backup.</li>
-        <li><strong>Three syllabus domains unpopulated.</strong> Data Interpretation, Puzzles, and Advanced Analytical Reasoning are scoped but not built, and are shown as locked rather than filled with placeholder content.</li>
-        <li><strong>No real-learner validation.</strong> Learning-effectiveness claims (Section&nbsp;5) are grounded in established tutoring-design patterns, not an outcome study on actual students.</li>
+      <ul>
+        <li><strong>Live generation is limited to the Coach conversation.</strong> Concept explanations, the question bank, and the roadmap are still hand-authored / rule-based; only the Coach's replies are produced by a live model, and only when the learner supplies their own API key.</li>
+        <li><strong>Small question bank.</strong> 3–5 questions per topic will repeat within a handful of practice sessions.</li>
+        <li><strong>Simulated percentile.</strong> Computed against an assumed peer-cohort distribution (mean 62%, s.d. 16), not measured against real test-takers.</li>
+        <li><strong>Single-device persistence.</strong> Progress and saved learner profiles live in one browser's local storage with no account system, sync, or backup.</li>
+        <li><strong>Three syllabus domains unpopulated.</strong> Data Interpretation, Puzzles, and Advanced Analytical Reasoning are scoped but not built.</li>
+        <li><strong>Gemini's browser-CORS behavior is not officially documented</strong> by Google, unlike Anthropic's explicit support for this pattern — it worked in testing, but a future API change could silently break it with no warning in the code.</li>
+        <li><strong>No real-learner validation.</strong> Learning-effectiveness claims are grounded in established tutoring-design patterns, not an outcome study on actual students.</li>
       </ul>
     </div>
   </section>
 
-  <section class="doc-section" id="roadmap">
-    <div class="section-head"><span class="section-num">09</span><h2>Recommendations &amp; Next Steps</h2></div>
+  <section>
+    <div class="section-head"><span class="section-num">9.</span><h2>Recommendations &amp; Next Steps</h2></div>
     <p>To move from this prototype toward a production-ready system, in priority order:</p>
     <ol>
-      <li><strong>Wire the Prompt Studio templates to a live Generative AI API</strong> (e.g. the Claude API), with the structured-output schemas in Section&nbsp;3 enforced at the integration layer so a malformed or ungrounded response is rejected before reaching a learner.</li>
-      <li><strong>Add an automated answer-verification step</strong> between generation and publication — a symbolic solver for algebraic topics, a rule-checker for logic-puzzle topics — so no generated question ships on the model's self-reported correctness alone.</li>
-      <li><strong>Expand the question bank per topic</strong> to the 30–50 range needed to support spaced repetition without noticeable repeats, generated in reviewed batches via the Stage&nbsp;2 template.</li>
-      <li><strong>Build the three remaining syllabus domains</strong> (Data Interpretation, Puzzles, Advanced Analytical Reasoning) using the same validate-before-ship process documented in Section&nbsp;6.</li>
-      <li><strong>Replace the simulated percentile with a real cohort benchmark</strong> once enough real learners have used the mock-test feature to compute one honestly.</li>
+      <li><strong>Extend live generation, under the same verification gate, to the question bank itself</strong> — not just the Coach conversation — using the Stage 2 template and an automated answer-checking step before anything reaches a learner.</li>
+      <li><strong>Add an automated answer-verification step</strong> for the Coach's own numeric answers specifically, since it is the one part of the system not currently checked against the verified static bank.</li>
+      <li><strong>Expand the question bank per topic</strong> to the 30–50 range needed to support spaced repetition without noticeable repeats.</li>
+      <li><strong>Build the three remaining syllabus domains</strong> using the same validate-before-ship process documented in Section 6.</li>
+      <li><strong>Replace the simulated percentile</strong> with a real cohort benchmark once enough real learners have used the mock-test feature.</li>
       <li><strong>Add account-based sync</strong> behind an explicit, revocable consent flow, keeping the current local-only mode available as a privacy-preserving default.</li>
-      <li><strong>Commission a small real-learner pilot</strong> (a single cohort across one prep cycle) to test the learning-effectiveness claims in Section&nbsp;5 against actual outcome data rather than design-pattern precedent alone.</li>
+      <li><strong>Commission a small real-learner pilot</strong> to test the Coach's guiding-question behavior and the roadmap's effectiveness against actual outcome data.</li>
     </ol>
   </section>
 
-  <section class="doc-section" id="conclusion">
-    <div class="section-head"><span class="section-num">10</span><h2>Conclusion</h2></div>
-    <p>AptiGenie meets the brief's functional specification end-to-end — profiling, roadmap, concept teaching, adaptive practice, timed assessment, performance reporting, and a documented, versioned prompt-engineering layer — and does so with content that has been verified rather than merely generated. Its evaluation profile is coherent rather than scattered: dimensions resting on hand-authored, human-checkable content score strong, while every dimension that depends on a live model connection or real learner data scores moderate and is accompanied by a named, addressable gap. That is the appropriate shape for a prototype, and Section&nbsp;9's roadmap describes exactly what closes each gap on the path to a production deployment.</p>
+  <section>
+    <div class="section-head"><span class="section-num">10.</span><h2>Conclusion</h2></div>
+    <p>AptiGenie meets the brief's functional specification end-to-end — profiling, roadmap, concept teaching, adaptive practice, timed assessment, performance reporting, a live conversational AI Coach, and a documented, versioned prompt-engineering layer — and does so with content that has been verified rather than merely generated. Since the first review cycle, the addition of a genuinely live, dual-provider AI Coach closed the prototype's largest gap while introducing a new, well-scoped one: live conversational answers are not yet bound by the same verification process as the static, graded question bank. Every dimension in this report either scores strong on hand-verified content or scores moderate with a named, addressable gap — a coherent and honest evaluation profile for a system at this stage, with Section 9 describing exactly what closes each remaining gap.</p>
   </section>
 
-  <footer class="doc-footer">AptiGenie Evaluation Report · Prepared for Prompt Engineering, CO2 — Analyze · 19 August 2026</footer>
-</div>
+  <footer>AptiGenie Evaluation Report &middot; Prepared for Prompt Engineering, CO2 — Analyze &middot; 19 August 2026</footer>
 
-</body>
-</html>
+</div>
