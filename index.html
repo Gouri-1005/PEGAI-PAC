@@ -590,11 +590,11 @@ table.plain td.num{font-family:"IBM Plex Mono",monospace; color:var(--ink);}
     <div class="field">
       <label>Provider</label>
       <div class="radio-row" id="coachProvider">
-        <button type="button" class="radio-pill selected" data-val="claude">Claude (Anthropic)</button>
-        <button type="button" class="radio-pill" data-val="gemini">Gemini (Google)</button>
+        <button type="button" class="radio-pill" data-val="claude">Claude (Anthropic)</button>
+        <button type="button" class="radio-pill selected" data-val="gemini">Gemini (Google)</button>
       </div>
     </div>
-    <div class="field" id="coachClaudeFields">
+    <div class="field hidden" id="coachClaudeFields">
       <label for="coachApiKey">Anthropic API key <span class="help">(optional)</span></label>
       <input type="password" id="coachApiKey" placeholder="sk-ant-...">
       <select id="coachModel">
@@ -604,7 +604,7 @@ table.plain td.num{font-family:"IBM Plex Mono",monospace; color:var(--ink);}
       </select>
       <span class="help">Sent directly from your browser to Anthropic. Works reliably from a static site — Anthropic explicitly supports this "bring your own key" pattern.</span>
     </div>
-    <div class="field hidden" id="coachGeminiFields">
+    <div class="field" id="coachGeminiFields">
       <label for="coachGeminiKey">Google AI (Gemini) API key <span class="help">(optional)</span></label>
       <input type="password" id="coachGeminiKey" placeholder="AIza...">
       <input type="text" id="coachGeminiModel" list="coachGeminiModelList" placeholder="gemini-2.5-flash" value="gemini-2.5-flash">
@@ -613,7 +613,7 @@ table.plain td.num{font-family:"IBM Plex Mono",monospace; color:var(--ink);}
         <option value="gemini-2.5-pro">
         <option value="gemini-3.7-flash">
       </datalist>
-      <span class="help">⚠ Google's Gemini API has no documented direct-browser-access support (unlike Anthropic's) — some browsers/regions may block this with a CORS error. If it fails, switch to Claude above.</span>
+      <span class="help">Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>. ⚠ Google's API has no documented direct-browser-access support (unlike Anthropic's) — if a message fails to send, it's usually a CORS block, not a bug here; retry once, and if it persists, that's Google's API design.</span>
     </div>
     <div style="display:flex; gap:8px; margin-top:8px;">
       <button class="btn btn--sm" id="coachSaveSettings" style="flex:1; justify-content:center;">Save</button>
@@ -1051,7 +1051,7 @@ const ACTIVE_KEY = "aptigenie_active_learner_v1";
 
 function defaultState(){
   return {profile:null, progress:{}, quizHistory:[], badges:[], learnerId:null,
-    aiProvider:"claude", aiKey:"", aiModel:"claude-opus-5", geminiKey:"", geminiModel:"gemini-2.5-flash", aiChat:[]};
+    aiProvider:"gemini", aiKey:"", aiModel:"claude-opus-5", geminiKey:"", geminiModel:"gemini-2.5-flash", aiChat:[]};
 }
 function loadLearners(){
   try{ return JSON.parse(localStorage.getItem(LEARNERS_KEY)) || {}; }catch(e){ return {}; }
